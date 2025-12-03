@@ -1,8 +1,36 @@
 @import "tailwindcss";
 
+/* ============================================
+   Design System: Cyber Forum
+   Farbschema: Cyan-Akzente auf Slate-Hintergrund
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Hintergrund & Text */
+  --background: #0f172a;
+  --background-secondary: #1e293b;
+  --foreground: #e2e8f0;
+  --foreground-muted: #94a3b8;
+
+  /* Akzentfarben */
+  --accent: #06b6d4;
+  --accent-hover: #22d3ee;
+  --accent-muted: #0891b2;
+  --accent-glow: rgba(6, 182, 212, 0.4);
+
+  /* Status-Farben */
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --error-muted: #991b1b;
+
+  /* Border & Cards */
+  --border: #334155;
+  --border-hover: #475569;
+  --card-bg: rgba(30, 41, 59, 0.6);
+
+  /* Spacing */
+  --header-height: 4rem;
 }
 
 @theme inline {
@@ -12,15 +40,151 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ============================================
+   Base Styles
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+}
+
+/* Subtiler Hintergrund-Gradient */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(6, 182, 212, 0.08) 0%,
+      transparent 50%
+    ),
+    radial-gradient(
+      ellipse at bottom right,
+      rgba(6, 182, 212, 0.05) 0%,
+      transparent 40%
+    );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* ============================================
+   Focus & Selection
+   ============================================ */
+
+::selection {
+  background: var(--accent);
+  color: var(--background);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Scrollbar (Webkit)
+   ============================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-hover);
+}
+
+/* ============================================
+   Link Styles
+   ============================================ */
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--accent-hover);
+}
+
+/* ============================================
+   Typography
+   ============================================ */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #fff;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.25rem;
+}
+h2 {
+  font-size: 1.875rem;
+}
+h3 {
+  font-size: 1.5rem;
+}
+h4 {
+  font-size: 1.25rem;
+}
+
+/* ============================================
+   Utilities
+   ============================================ */
+
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Glow Effect für wichtige Elemente */
+.glow {
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.glow-text {
+  text-shadow: 0 0 10px var(--accent-glow);
 }

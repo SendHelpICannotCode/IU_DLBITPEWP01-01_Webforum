@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquare, Menu, X, LogIn, UserPlus } from "lucide-react";
+import { MessageSquare, Menu, X, LogIn, UserPlus, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
+import { logout } from "@/actions/auth";
 
 interface HeaderProps {
-  /** Aktueller Benutzer (später aus Session) */
+  /** Aktueller Benutzer aus Session */
   user?: {
     id: string;
     username: string;
@@ -17,6 +18,10 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleLogout = async () => {
+    await logout();
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
@@ -67,7 +72,8 @@ export function Header({ user }: HeaderProps) {
                   </span>
                 )}
               </span>
-              <Button variant="ghost" size="sm">
+              <Button variant="ghost" size="sm" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             </>
@@ -142,7 +148,13 @@ export function Header({ user }: HeaderProps) {
                     {user.username}
                   </span>
                 </span>
-                <Button variant="ghost" size="sm" className="justify-start">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="justify-start"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="mr-2 h-4 w-4" />
                   Logout
                 </Button>
               </>

@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout";
 import { Footer } from "@/components/layout";
+import { getSession } from "@/lib/session";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,13 +22,22 @@ export const metadata: Metadata = {
   keywords: ["Forum", "Community", "Diskussion", "Next.js", "React"],
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // TODO: Session aus iron-session laden
-  const user = null;
+  // Session laden
+  const session = await getSession();
+
+  // User-Objekt für Header erstellen (nur wenn eingeloggt)
+  const user = session.isLoggedIn
+    ? {
+        id: session.userId!,
+        username: session.username!,
+        role: session.role!,
+      }
+    : null;
 
   return (
     <html lang="de">

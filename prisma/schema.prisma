@@ -1,4 +1,3 @@
-// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -8,45 +7,38 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  username      String    @unique
-  email         String    @unique
-  passwordHash  String
-  role          UserRole  @default(USER)
-  createdAt     DateTime  @default(now())
-  
-  threads       Thread[]
-  posts         Post[]
-}
-
-enum UserRole {
-  USER
-  ADMIN
+  id           String   @id @default(cuid())
+  username     String   @unique
+  email        String   @unique
+  passwordHash String
+  role         UserRole @default(USER)
+  createdAt    DateTime @default(now())
+  posts        Post[]
+  threads      Thread[]
 }
 
 model Thread {
   id             String          @id @default(cuid())
   title          String
-  content        String   
+  content        String
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
   currentVersion Int             @default(1)
-  
   authorId       String
-  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   posts          Post[]
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
   versions       ThreadVersion[]
 }
 
 model ThreadVersion {
   id        String   @id @default(cuid())
   threadId  String
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
   version   Int
   title     String
   content   String
   createdAt DateTime @default(now())
-  
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
   @@unique([threadId, version])
   @@index([threadId])
 }
@@ -57,24 +49,26 @@ model Post {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
   currentVersion Int           @default(1)
-  
   threadId       String
-  thread         Thread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  
   authorId       String
   author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  
+  thread         Thread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
   versions       PostVersion[]
 }
 
 model PostVersion {
   id        String   @id @default(cuid())
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   version   Int
   content   String
   createdAt DateTime @default(now())
-  
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@unique([postId, version])
   @@index([postId])
+}
+
+enum UserRole {
+  USER
+  ADMIN
 }

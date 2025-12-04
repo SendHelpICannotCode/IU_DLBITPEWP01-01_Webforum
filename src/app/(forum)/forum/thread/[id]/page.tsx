@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MessageSquare, Clock, User, Users } from "lucide-react";
+import { ArrowLeft, MessageSquare, User, Users } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThread } from "@/actions/threads";
 import { Card, CardContent, Button } from "@/components/ui";
@@ -9,24 +9,12 @@ import {
   PostForm,
   DeleteThreadButton,
   EditThreadButton,
+  ThreadContent,
 } from "@/components/forum";
 import { cn } from "@/lib/utils";
 
 interface ThreadPageProps {
   params: Promise<{ id: string }>;
-}
-
-/**
- * Formatiert ein Datum für die Anzeige
- */
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export default async function ThreadPage({ params }: ThreadPageProps) {
@@ -55,9 +43,6 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
       {/* Thread Header */}
       <Card className="mb-6">
         <div className="p-6">
-          {/* Titel */}
-          <h1 className="text-2xl font-bold text-white mb-4">{thread.title}</h1>
-
           {/* Meta-Informationen */}
           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
             {/* Autor */}
@@ -87,12 +72,6 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
               )}
             </div>
 
-            {/* Datum */}
-            <div className="flex items-center gap-1.5">
-              <Clock className="h-4 w-4" />
-              <span>{formatDate(thread.createdAt)}</span>
-            </div>
-
             {/* Antworten */}
             <div className="flex items-center gap-1.5">
               <MessageSquare className="h-4 w-4" />
@@ -103,10 +82,15 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
             </div>
           </div>
 
-          {/* Thread-Inhalt */}
-          <div className="text-slate-300 whitespace-pre-wrap break-words">
-            {thread.content}
-          </div>
+          {/* Thread-Inhalt mit Versionierung */}
+          <ThreadContent
+            threadId={thread.id}
+            title={thread.title}
+            content={thread.content}
+            currentVersion={thread.currentVersion}
+            createdAt={thread.createdAt}
+            updatedAt={thread.updatedAt}
+          />
 
           {/* Aktionen (nur wenn berechtigt) */}
           {canModerate && (

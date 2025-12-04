@@ -1,8 +1,11 @@
 export { ThreadCard } from "./ThreadCard";
 export { ThreadForm } from "./ThreadForm";
+export { ThreadContent } from "./ThreadContent";
 export { PostCard } from "./PostCard";
 export { PostForm } from "./PostForm";
+export { PostCardContent } from "./PostCardContent";
 export { DeleteThreadButton } from "./DeleteThreadButton";
 export { DeletePostButton } from "./DeletePostButton";
 export { EditThreadButton } from "./EditThreadButton";
 export { EditPostButton } from "./EditPostButton";
+export { VersionNavigator } from "./VersionNavigator";

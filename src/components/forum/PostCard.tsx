@@ -1,8 +1,8 @@
 import { UserRole } from "@prisma/client";
-import { Clock } from "lucide-react";
 import { Card } from "@/components/ui";
 import { DeletePostButton } from "@/components/forum/DeletePostButton";
 import { EditPostButton } from "@/components/forum/EditPostButton";
+import { PostCardContent } from "@/components/forum/PostCardContent";
 import { cn } from "@/lib/utils";
 
 interface PostCardProps {
@@ -10,6 +10,8 @@ interface PostCardProps {
     id: string;
     content: string;
     createdAt: Date;
+    updatedAt: Date;
+    currentVersion: number;
     author: {
       id: string;
       username: string;
@@ -18,19 +20,6 @@ interface PostCardProps {
   };
   currentUserId?: string;
   currentUserRole?: UserRole;
-}
-
-/**
- * Formatiert ein Datum für die Anzeige
- */
-function formatDate(date: Date): string {
-  return date.toLocaleDateString("de-DE", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export function PostCard({
@@ -50,7 +39,7 @@ export function PostCard({
       )}
     >
       <div className="p-5">
-        {/* Header mit Autor und Datum */}
+        {/* Header mit Autor */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             {/* Avatar Placeholder */}
@@ -89,18 +78,16 @@ export function PostCard({
               </span>
             )}
           </div>
-
-          {/* Datum */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Clock className="h-3.5 w-3.5" />
-            <span>{formatDate(post.createdAt)}</span>
-          </div>
         </div>
 
-        {/* Inhalt */}
-        <div className="text-slate-300 whitespace-pre-wrap break-words">
-          {post.content}
-        </div>
+        {/* Inhalt mit Versionierung */}
+        <PostCardContent
+          postId={post.id}
+          content={post.content}
+          currentVersion={post.currentVersion}
+          createdAt={post.createdAt}
+          updatedAt={post.updatedAt}
+        />
 
         {/* Aktionen (nur wenn berechtigt) */}
         {canModerate && (

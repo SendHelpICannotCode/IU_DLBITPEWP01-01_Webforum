@@ -148,13 +148,25 @@ export async function updatePost(
   }
 
   try {
-    // 5. Post aktualisieren
-    await prisma.post.update({
-      where: { id: postId },
-      data: parsed.data,
+    // 5. Alte Version speichern (Versionierung)
+    await prisma.postVersion.create({
+      data: {
+        postId: existingPost.id,
+        version: existingPost.currentVersion,
+        content: existingPost.content,
+      },
     });
 
-    // 6. Cache invalidieren
+    // 6. Post aktualisieren mit erhöhter Versionsnummer
+    await prisma.post.update({
+      where: { id: postId },
+      data: {
+        ...parsed.data,
+        currentVersion: existingPost.currentVersion + 1,
+      },
+    });
+
+    // 7. Cache invalidieren
     revalidatePath(`/forum/thread/${existingPost.threadId}`);
 
     return { success: true };
@@ -165,6 +177,34 @@ export async function updatePost(
       error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
     };
   }
+}
+
+/**
+ * Holt alle Versionen eines Posts
+ */
+export async function getPostVersions(postId: string) {
+  const versions = await prisma.postVersion.findMany({
+    where: { postId },
+    orderBy: { version: "asc" },
+  });
+
+  return versions;
+}
+
+/**
+ * Holt eine spezifische Version eines Posts
+ */
+export async function getPostVersion(postId: string, version: number) {
+  const postVersion = await prisma.postVersion.findUnique({
+    where: {
+      postId_version: {
+        postId,
+        version,
+      },
+    },
+  });
+
+  return postVersion;
 }
 
 /**

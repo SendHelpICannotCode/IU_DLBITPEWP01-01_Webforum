@@ -25,25 +25,56 @@ enum UserRole {
 }
 
 model Thread {
-  id        String   @id @default(cuid())
-  title     String
-  content   String   
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String          @id @default(cuid())
+  title          String
+  content        String   
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  currentVersion Int             @default(1)
   
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  posts     Post[]
+  authorId       String
+  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  posts          Post[]
+  versions       ThreadVersion[]
 }
 
-model Post {
+model ThreadVersion {
   id        String   @id @default(cuid())
+  threadId  String
+  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  version   Int
+  title     String
   content   String
   createdAt DateTime @default(now())
   
-  threadId  String
-  thread    Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  @@unique([threadId, version])
+  @@index([threadId])
+}
+
+model Post {
+  id             String        @id @default(cuid())
+  content        String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  currentVersion Int           @default(1)
   
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  threadId       String
+  thread         Thread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  
+  authorId       String
+  author         User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  versions       PostVersion[]
+}
+
+model PostVersion {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  version   Int
+  content   String
+  createdAt DateTime @default(now())
+  
+  @@unique([postId, version])
+  @@index([postId])
 }

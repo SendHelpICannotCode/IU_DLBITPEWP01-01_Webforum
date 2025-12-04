@@ -201,13 +201,26 @@ export async function updateThread(
   }
 
   try {
-    // 5. Thread aktualisieren
-    await prisma.thread.update({
-      where: { id: threadId },
-      data: parsed.data,
+    // 5. Alte Version speichern (Versionierung)
+    await prisma.threadVersion.create({
+      data: {
+        threadId: existingThread.id,
+        version: existingThread.currentVersion,
+        title: existingThread.title,
+        content: existingThread.content,
+      },
     });
 
-    // 6. Cache invalidieren
+    // 6. Thread aktualisieren mit erhöhter Versionsnummer
+    await prisma.thread.update({
+      where: { id: threadId },
+      data: {
+        ...parsed.data,
+        currentVersion: existingThread.currentVersion + 1,
+      },
+    });
+
+    // 7. Cache invalidieren
     revalidatePath("/forum");
     revalidatePath(`/forum/thread/${threadId}`);
 
@@ -219,6 +232,34 @@ export async function updateThread(
       error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
     };
   }
+}
+
+/**
+ * Holt alle Versionen eines Threads
+ */
+export async function getThreadVersions(threadId: string) {
+  const versions = await prisma.threadVersion.findMany({
+    where: { threadId },
+    orderBy: { version: "asc" },
+  });
+
+  return versions;
+}
+
+/**
+ * Holt eine spezifische Version eines Threads
+ */
+export async function getThreadVersion(threadId: string, version: number) {
+  const threadVersion = await prisma.threadVersion.findUnique({
+    where: {
+      threadId_version: {
+        threadId,
+        version,
+      },
+    },
+  });
+
+  return threadVersion;
 }
 
 /**

@@ -1,51 +1,101 @@
+import Link from "next/link";
+import { MessageSquare, PlusCircle, Users } from "lucide-react";
 import { getSession } from "@/lib/session";
-import { Card, CardHeader, CardContent } from "@/components/ui";
-import { MessageSquare } from "lucide-react";
+import { getThreads } from "@/actions/threads";
+import { Card, CardHeader, CardContent, Button } from "@/components/ui";
+import { ThreadCard, ThreadForm } from "@/components/forum";
 
 export default async function ForumPage() {
-  const session = await getSession();
+  const [session, threads] = await Promise.all([getSession(), getThreads()]);
 
   return (
     <div className="container py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white mb-2">Forum</h1>
-        <p className="text-slate-400">
-          Willkommen im Forum
-          {session.isLoggedIn && (
-            <span className="text-cyan-400">, {session.username}</span>
-          )}
-          ! Hier werden bald die Threads angezeigt.
-        </p>
+      {/* Header-Bereich */}
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Forum</h1>
+          <p className="text-slate-400">
+            {threads.length}{" "}
+            {threads.length === 1 ? "Diskussion" : "Diskussionen"}
+            {session.isLoggedIn && (
+              <span className="text-cyan-400">
+                {" "}
+                &middot; {session.username}
+              </span>
+            )}
+          </p>
+        </div>
+
+        {/* Neues Thema Button (nur eingeloggt) */}
+        {session.isLoggedIn && (
+          <Link href="#new-thread">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Neues Thema
+            </Button>
+          </Link>
+        )}
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-3">
-            <MessageSquare className="h-6 w-6 text-cyan-500" />
-            <h2 className="text-xl font-semibold">Thread-Übersicht</h2>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <p className="text-slate-400">
-            Die Forum-Funktionalität wird in Sprint 3 implementiert.
-          </p>
-          {session.isLoggedIn ? (
-            <p className="mt-4 text-sm text-green-400">
-              ✓ Du bist eingeloggt als{" "}
-              <span className="font-medium">{session.username}</span>
-              {session.role === "ADMIN" && (
-                <span className="ml-2 rounded bg-cyan-900/50 px-2 py-0.5 text-xs text-cyan-300">
-                  Admin
-                </span>
-              )}
+      {/* Thread-Liste */}
+      {threads.length > 0 ? (
+        <div className="space-y-4 mb-12">
+          {threads.map((thread) => (
+            <ThreadCard key={thread.id} thread={thread} />
+          ))}
+        </div>
+      ) : (
+        <Card className="mb-12">
+          <CardContent className="py-12 text-center">
+            <MessageSquare className="mx-auto h-12 w-12 text-slate-600 mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">
+              Noch keine Themen vorhanden
+            </h3>
+            <p className="text-slate-400 mb-4">
+              Sei der Erste und starte eine Diskussion!
             </p>
-          ) : (
-            <p className="mt-4 text-sm text-slate-500">
-              Melde dich an, um Threads zu erstellen und zu kommentieren.
+            {!session.isLoggedIn && (
+              <Link href="/login">
+                <Button variant="outline">
+                  <Users className="mr-2 h-4 w-4" />
+                  Anmelden um zu schreiben
+                </Button>
+              </Link>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Neues Thema Formular (nur eingeloggt) */}
+      {session.isLoggedIn ? (
+        <Card id="new-thread">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <PlusCircle className="h-6 w-6 text-cyan-500" />
+              <h2 className="text-xl font-semibold">Neues Thema erstellen</h2>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ThreadForm />
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <p className="text-slate-400 mb-4">
+              Melde dich an, um Themen zu erstellen und zu kommentieren.
             </p>
-          )}
-        </CardContent>
-      </Card>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link href="/login">
+                <Button>Anmelden</Button>
+              </Link>
+              <Link href="/register">
+                <Button variant="outline">Registrieren</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

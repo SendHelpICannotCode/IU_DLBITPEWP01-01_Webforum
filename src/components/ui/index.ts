@@ -12,3 +12,4 @@ export {
 } from "./Card";
 export { Textarea } from "./Textarea";
 export type { TextareaProps } from "./Textarea";
+export { Modal, ConfirmModal } from "./Modal";

@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { login, ActionResult } from "@/actions/auth";
 import { Button, Input, Card, CardHeader, CardContent } from "@/components/ui";
 
@@ -45,6 +46,7 @@ export default function LoginPage() {
                 placeholder="deine@email.de"
                 required
                 autoComplete="email"
+                disabled={isPending}
               />
               {state?.fieldErrors?.email && (
                 <p className="mt-1 text-sm text-red-400">
@@ -68,6 +70,7 @@ export default function LoginPage() {
                 placeholder="••••••••"
                 required
                 autoComplete="current-password"
+                disabled={isPending}
               />
               {state?.fieldErrors?.password && (
                 <p className="mt-1 text-sm text-red-400">
@@ -78,7 +81,14 @@ export default function LoginPage() {
 
             {/* Submit */}
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Wird angemeldet..." : "Anmelden"}
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird angemeldet...
+                </>
+              ) : (
+                "Anmelden"
+              )}
             </Button>
           </form>
 

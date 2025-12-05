@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
 import { register, ActionResult } from "@/actions/auth";
 import { Button, Input, Card, CardHeader, CardContent } from "@/components/ui";
 
@@ -47,6 +48,7 @@ export default function RegisterPage() {
                 autoComplete="username"
                 minLength={3}
                 maxLength={20}
+                disabled={isPending}
               />
               {state?.fieldErrors?.username && (
                 <p className="mt-1 text-sm text-red-400">
@@ -73,6 +75,7 @@ export default function RegisterPage() {
                 placeholder="deine@email.de"
                 required
                 autoComplete="email"
+                disabled={isPending}
               />
               {state?.fieldErrors?.email && (
                 <p className="mt-1 text-sm text-red-400">
@@ -97,6 +100,7 @@ export default function RegisterPage() {
                 required
                 autoComplete="new-password"
                 minLength={8}
+                disabled={isPending}
               />
               {state?.fieldErrors?.password && (
                 <p className="mt-1 text-sm text-red-400">
@@ -110,7 +114,14 @@ export default function RegisterPage() {
 
             {/* Submit */}
             <Button type="submit" className="w-full" disabled={isPending}>
-              {isPending ? "Wird registriert..." : "Registrieren"}
+              {isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Wird registriert...
+                </>
+              ) : (
+                "Registrieren"
+              )}
             </Button>
           </form>
 

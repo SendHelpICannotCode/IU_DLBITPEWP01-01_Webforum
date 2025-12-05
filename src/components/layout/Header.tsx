@@ -1,8 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { MessageSquare, Menu, X, LogIn, UserPlus, LogOut } from "lucide-react";
-import { useState } from "react";
+import {
+  MessageSquare,
+  Menu,
+  X,
+  LogIn,
+  UserPlus,
+  LogOut,
+  Loader2,
+} from "lucide-react";
+import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { logout } from "@/actions/auth";
@@ -18,9 +26,12 @@ interface HeaderProps {
 
 export function Header({ user }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggingOut, startLogoutTransition] = useTransition();
 
-  const handleLogout = async () => {
-    await logout();
+  const handleLogout = () => {
+    startLogoutTransition(async () => {
+      await logout();
+    });
   };
 
   return (
@@ -60,9 +71,23 @@ export function Header({ user }: HeaderProps) {
                   </span>
                 )}
               </span>
-              <Button variant="ghost" size="sm" onClick={handleLogout}>
-                <LogOut className="mr-2 h-4 w-4" />
-                Logout
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                disabled={isLoggingOut}
+              >
+                {isLoggingOut ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Logout...
+                  </>
+                ) : (
+                  <>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    Logout
+                  </>
+                )}
               </Button>
             </>
           ) : (
@@ -132,9 +157,19 @@ export function Header({ user }: HeaderProps) {
                   size="sm"
                   className="justify-start"
                   onClick={handleLogout}
+                  disabled={isLoggingOut}
                 >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
+                  {isLoggingOut ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Logout...
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </>
+                  )}
                 </Button>
               </>
             ) : (

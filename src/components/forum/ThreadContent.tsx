@@ -3,6 +3,9 @@
 import { useState, useEffect } from "react";
 import { VersionNavigator } from "./VersionNavigator";
 import { getThreadVersions } from "@/actions/threads";
+import { DeleteThreadButton } from "./DeleteThreadButton";
+import { ThreadEditor } from "./ThreadEditor";
+import { Pencil } from "lucide-react";
 
 interface ThreadVersion {
   version: number;
@@ -18,6 +21,7 @@ interface ThreadContentProps {
   currentVersion: number;
   createdAt: Date;
   updatedAt: Date;
+  canModerate?: boolean;
 }
 
 export function ThreadContent({
@@ -27,11 +31,13 @@ export function ThreadContent({
   currentVersion,
   createdAt,
   updatedAt,
+  canModerate,
 }: ThreadContentProps) {
   const [versions, setVersions] = useState<ThreadVersion[]>([]);
   const [displayTitle, setDisplayTitle] = useState(title);
   const [displayContent, setDisplayContent] = useState(content);
   const [isViewingHistory, setIsViewingHistory] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Versionen laden wenn nötig
   useEffect(() => {
@@ -135,6 +141,31 @@ export function ThreadContent({
           onVersionChange={handleVersionChange}
         />
       </div>
+
+      {/* Aktionen (nur wenn berechtigt) */}
+      {isEditing ? (
+        <ThreadEditor
+          threadId={threadId}
+          currentTitle={title}
+          currentContent={content}
+          onCancel={() => setIsEditing(false)}
+          onSuccess={() => setIsEditing(false)}
+        />
+      ) : (
+        canModerate && (
+          <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => setIsEditing(true)}
+              className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1"
+            >
+              <Pencil className="h-3 w-3" />
+              Bearbeiten
+            </button>
+            <DeleteThreadButton threadId={threadId} />
+          </div>
+        )
+      )}
     </div>
   );
 }

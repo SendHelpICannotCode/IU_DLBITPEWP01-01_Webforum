@@ -6,6 +6,6 @@ export { PostForm } from "./PostForm";
 export { PostCardContent } from "./PostCardContent";
 export { DeleteThreadButton } from "./DeleteThreadButton";
 export { DeletePostButton } from "./DeletePostButton";
-export { EditThreadButton } from "./EditThreadButton";
-export { EditPostButton } from "./EditPostButton";
 export { VersionNavigator } from "./VersionNavigator";
+export { PostEditor } from "./PostEditor";
+export { ThreadEditor } from "./ThreadEditor";

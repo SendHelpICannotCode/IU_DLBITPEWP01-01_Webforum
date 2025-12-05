@@ -142,11 +142,16 @@ export function Header({ user }: HeaderProps) {
           <div className="flex flex-col gap-2 pt-4 border-t border-slate-800">
             {user ? (
               <>
-                <span className="text-sm text-slate-400">
+                <span className="text-sm text-slate-400 flex items-center gap-1.5">
                   Eingeloggt als{" "}
                   <span className="font-medium text-cyan-400">
                     {user.username}
                   </span>
+                  {user.role === "ADMIN" && (
+                    <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-xs text-cyan-300">
+                      Admin
+                    </span>
+                  )}
                 </span>
                 <Button
                   variant="ghost"

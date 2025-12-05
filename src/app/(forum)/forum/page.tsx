@@ -14,14 +14,23 @@ export default async function ForumPage() {
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">Forum</h1>
-          <p className="text-slate-400">
-            {threads.length}{" "}
-            {threads.length === 1 ? "Diskussion" : "Diskussionen"}
+          <p className="text-slate-400 flex flex-wrap items-center gap-2">
+            <span>
+              {threads.length}{" "}
+              {threads.length === 1 ? "Diskussion" : "Diskussionen"}
+            </span>
             {session.isLoggedIn && (
-              <span className="text-cyan-400">
-                {" "}
-                &middot; {session.username}
-              </span>
+              <>
+                <span className="text-slate-600">•</span>
+                <span className="text-cyan-400 font-medium">
+                  {session.username}
+                </span>
+                {session.role === "ADMIN" && (
+                  <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[11px] text-cyan-300">
+                    Admin
+                  </span>
+                )}
+              </>
             )}
           </p>
         </div>

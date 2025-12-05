@@ -1,8 +1,11 @@
+"use client";
+
+import { useState } from "react";
 import { UserRole } from "@prisma/client";
 import { Card } from "@/components/ui";
 import { DeletePostButton } from "@/components/forum/DeletePostButton";
-import { EditPostButton } from "@/components/forum/EditPostButton";
 import { PostCardContent } from "@/components/forum/PostCardContent";
+import { PostEditor } from "@/components/forum/PostEditor";
 import { cn } from "@/lib/utils";
 
 interface PostCardProps {
@@ -27,6 +30,7 @@ export function PostCard({
   currentUserId,
   currentUserRole,
 }: PostCardProps) {
+  const [isEditing, setIsEditing] = useState(false);
   const isAdmin = post.author.role === "ADMIN";
   const isOwnPost = currentUserId === post.author.id;
   const canModerate = isOwnPost || currentUserRole === "ADMIN";
@@ -90,11 +94,26 @@ export function PostCard({
         />
 
         {/* Aktionen (nur wenn berechtigt) */}
-        {canModerate && (
-          <div className="mt-4 pt-3 border-t border-slate-800 flex items-center gap-3">
-            <EditPostButton postId={post.id} currentContent={post.content} />
-            <DeletePostButton postId={post.id} />
-          </div>
+        {isEditing ? (
+          <PostEditor
+            postId={post.id}
+            currentContent={post.content}
+            onCancel={() => setIsEditing(false)}
+            onSuccess={() => setIsEditing(false)}
+          />
+        ) : (
+          canModerate && (
+            <div className="mt-4 pt-3 border-t border-slate-800 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+              >
+                Bearbeiten
+              </button>
+              <DeletePostButton postId={post.id} />
+            </div>
+          )
         )}
       </div>
     </Card>

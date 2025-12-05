@@ -7,8 +7,6 @@ import { Card, CardContent, Button } from "@/components/ui";
 import {
   PostCard,
   PostForm,
-  DeleteThreadButton,
-  EditThreadButton,
   ThreadContent,
 } from "@/components/forum";
 import { cn } from "@/lib/utils";
@@ -90,19 +88,8 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
             currentVersion={thread.currentVersion}
             createdAt={thread.createdAt}
             updatedAt={thread.updatedAt}
+            canModerate={canModerate}
           />
-
-          {/* Aktionen (nur wenn berechtigt) */}
-          {canModerate && (
-            <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3">
-              <EditThreadButton
-                threadId={thread.id}
-                currentTitle={thread.title}
-                currentContent={thread.content}
-              />
-              <DeleteThreadButton threadId={thread.id} />
-            </div>
-          )}
         </div>
       </Card>
 

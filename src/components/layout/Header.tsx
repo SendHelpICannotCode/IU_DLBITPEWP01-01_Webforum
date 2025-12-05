@@ -43,18 +43,6 @@ export function Header({ user }: HeaderProps) {
           >
             Forum
           </Link>
-          <Link
-            href="/impressum"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-cyan-400"
-          >
-            Impressum
-          </Link>
-          <Link
-            href="/datenschutz"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-cyan-400"
-          >
-            Datenschutz
-          </Link>
         </nav>
 
         {/* Auth Buttons (Desktop) */}
@@ -123,20 +111,6 @@ export function Header({ user }: HeaderProps) {
             onClick={() => setMobileMenuOpen(false)}
           >
             Forum
-          </Link>
-          <Link
-            href="/impressum"
-            className="text-sm font-medium text-slate-300 hover:text-cyan-400"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Impressum
-          </Link>
-          <Link
-            href="/datenschutz"
-            className="text-sm font-medium text-slate-300 hover:text-cyan-400"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Datenschutz
           </Link>
 
           <div className="flex flex-col gap-2 pt-4 border-t border-slate-800">

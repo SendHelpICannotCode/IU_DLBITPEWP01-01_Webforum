@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, MessageSquare, User, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  ArrowLeft,
+  MessageSquare,
+  User,
+  Users,
+} from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThread } from "@/actions/threads";
 import { Card, CardContent, Button } from "@/components/ui";
@@ -13,7 +19,40 @@ interface ThreadPageProps {
 
 export default async function ThreadPage({ params }: ThreadPageProps) {
   const { id } = await params;
-  const [session, thread] = await Promise.all([getSession(), getThread(id)]);
+  const [session, { thread, dbError }] = await Promise.all([
+    getSession(),
+    getThread(id),
+  ]);
+
+  // Bei DB-Fehler: Fehlermeldung anzeigen
+  if (dbError) {
+    return (
+      <div className="container pt-8 pb-16">
+        <Link
+          href="/"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zur Übersicht
+        </Link>
+
+        <Card className="border-amber-500/50">
+          <CardContent className="py-12 text-center">
+            <AlertTriangle className="mx-auto h-12 w-12 text-amber-500 mb-4" />
+            <h3 className="text-lg font-medium text-white mb-2">
+              Datenbank nicht erreichbar
+            </h3>
+            <p className="text-slate-400 mb-4">
+              Die Verbindung zur Datenbank konnte nicht hergestellt werden.
+            </p>
+            <Link href="/">
+              <Button variant="outline">Zurück zur Startseite</Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (!thread) {
     notFound();

@@ -57,10 +57,15 @@ export async function getThreads(): Promise<GetThreadsResult> {
 }
 
 /**
- * Holt einen einzelnen Thread mit Posts
+ * Rückgabetyp für getThread
  */
-export async function getThread(id: string) {
-  const thread = await prisma.thread.findUnique({
+export type GetThreadResult = {
+  thread: Awaited<ReturnType<typeof fetchThread>> | null;
+  dbError: boolean;
+};
+
+async function fetchThread(id: string) {
+  return prisma.thread.findUnique({
     where: { id },
     include: {
       author: {
@@ -84,8 +89,21 @@ export async function getThread(id: string) {
       },
     },
   });
+}
 
-  return thread;
+/**
+ * Holt einen einzelnen Thread mit Posts
+ * Nutzt den gecacheten DB-Status
+ */
+export async function getThread(id: string): Promise<GetThreadResult> {
+  const dbConnected = await checkDatabaseConnection();
+
+  if (!dbConnected) {
+    return { thread: null, dbError: true };
+  }
+
+  const thread = await fetchThread(id);
+  return { thread, dbError: false };
 }
 
 /**

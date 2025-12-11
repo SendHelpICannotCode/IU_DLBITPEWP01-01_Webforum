@@ -12,7 +12,7 @@ export function Footer() {
           <div className="space-y-3">
             <Link
               href="/"
-              className="flex items-center gap-2 text-lg font-bold text-white"
+              className="flex items-center gap-2 text-lg font-bold text-white cursor-pointer"
             >
               <MessageSquare className="h-5 w-5 text-cyan-500" />
               CyberForum
@@ -29,13 +29,13 @@ export function Footer() {
             <nav className="flex flex-col gap-2">
               <Link
                 href="/impressum"
-                className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+                className="text-sm text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
               >
                 Impressum
               </Link>
               <Link
                 href="/datenschutz"
-                className="text-sm text-slate-400 hover:text-cyan-400 transition-colors"
+                className="text-sm text-slate-400 hover:text-cyan-400 transition-colors cursor-pointer"
               >
                 Datenschutzerklärung
               </Link>
@@ -71,7 +71,7 @@ export function Footer() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-cyan-400 transition-colors"
+              className="text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer"
               aria-label="GitHub Repository"
             >
               <Github className="h-5 w-5" />
@@ -80,7 +80,7 @@ export function Footer() {
               href="https://nextjs.org"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-slate-500 hover:text-cyan-400 transition-colors"
+              className="text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer"
               aria-label="Next.js Dokumentation"
             >
               <ExternalLink className="h-5 w-5" />

@@ -95,7 +95,7 @@ export function VersionNavigator({
       {isViewingHistory && (
         <button
           onClick={handleReset}
-          className="mr-2 px-2 py-0.5 text-[10px] rounded bg-cyan-900/50 text-cyan-400 hover:bg-cyan-900/70 transition-colors"
+          className="mr-2 px-2 py-0.5 text-[10px] rounded bg-cyan-900/50 text-cyan-400 hover:bg-cyan-900/70 transition-colors cursor-pointer"
         >
           Zur aktuellen Version
         </button>
@@ -108,7 +108,7 @@ export function VersionNavigator({
         className={cn(
           "p-0.5 rounded transition-colors",
           selectedVersion > 1
-            ? "text-slate-400 hover:text-white hover:bg-slate-800"
+            ? "text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
             : "text-slate-700 cursor-not-allowed"
         )}
         title="Ältere Version anzeigen"
@@ -133,7 +133,7 @@ export function VersionNavigator({
         className={cn(
           "p-0.5 rounded transition-colors",
           selectedVersion < currentVersion
-            ? "text-slate-400 hover:text-white hover:bg-slate-800"
+            ? "text-slate-400 hover:text-white hover:bg-slate-800 cursor-pointer"
             : "text-slate-700 cursor-not-allowed"
         )}
         title="Neuere Version anzeigen"

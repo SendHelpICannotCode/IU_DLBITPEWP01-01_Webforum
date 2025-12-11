@@ -157,7 +157,7 @@ export function ThreadContent({
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1"
+              className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
             >
               <Pencil className="h-3 w-3" />
               Bearbeiten

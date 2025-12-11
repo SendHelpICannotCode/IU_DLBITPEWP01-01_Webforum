@@ -43,7 +43,7 @@ export function DeleteThreadButton({ threadId }: DeleteThreadButtonProps) {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="text-sm text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"
+        className="text-sm text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
       >
         <Trash2 className="h-3 w-3" />
         Löschen

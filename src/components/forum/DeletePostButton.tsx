@@ -44,7 +44,7 @@ export function DeletePostButton({ postId }: DeletePostButtonProps) {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1"
+        className="text-xs text-slate-500 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
       >
         {isDeleting ? (
           <>

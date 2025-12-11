@@ -107,7 +107,7 @@ export function PostCard({
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                className="text-xs text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
               >
                 Bearbeiten
               </button>

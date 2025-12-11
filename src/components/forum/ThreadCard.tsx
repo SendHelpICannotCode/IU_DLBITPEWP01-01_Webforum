@@ -60,7 +60,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
   const postCount = thread._count.posts;
 
   return (
-    <Link href={`/forum/thread/${thread.id}`}>
+    <Link href={`/forum/thread/${thread.id}`} className="cursor-pointer">
       <Card className="group transition-all hover:border-cyan-800/50 hover:bg-slate-800/50 mb-4">
         <div className="p-5">
           {/* Titel */}

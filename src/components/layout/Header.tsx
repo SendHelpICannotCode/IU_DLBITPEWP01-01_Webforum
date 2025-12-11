@@ -42,7 +42,7 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400"
+          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400 cursor-pointer"
         >
           <MessageSquare className="h-6 w-6 text-cyan-500" />
           <span className="hidden sm:inline">CyberForum</span>
@@ -116,7 +116,7 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
         {/* Mobile Menu Button */}
         <button
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          className="md:hidden p-2 text-slate-400 hover:text-white transition-colors"
+          className="md:hidden p-2 text-slate-400 hover:text-white transition-colors cursor-pointer"
           aria-label="Menü öffnen"
         >
           {mobileMenuOpen ? (

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, History } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +25,11 @@ export function VersionNavigator({
   className,
 }: VersionNavigatorProps) {
   const [selectedVersion, setSelectedVersion] = useState(currentVersion);
+
+  // Wenn der Server eine neue aktuelle Version liefert, auf diese springen
+  useEffect(() => {
+    setSelectedVersion(currentVersion);
+  }, [currentVersion]);
 
   // Wenn nur Version 1 und keine älteren Versionen, ist nichts bearbeitet
   const hasHistory = versions.length > 0;

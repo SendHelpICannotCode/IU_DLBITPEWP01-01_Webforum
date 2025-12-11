@@ -117,6 +117,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
 
           {/* Thread-Inhalt mit Versionierung */}
           <ThreadContent
+            key={`${thread.id}-${thread.currentVersion}`}
             threadId={thread.id}
             title={thread.title}
             content={thread.content}

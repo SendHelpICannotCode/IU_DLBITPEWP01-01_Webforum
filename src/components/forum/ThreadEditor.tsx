@@ -74,9 +74,7 @@ export function ThreadEditor({
             aria-invalid={fieldErrors.title ? "true" : undefined}
           />
           {fieldErrors.title && (
-            <p className="mt-1 text-sm text-red-400">
-              {fieldErrors.title[0]}
-            </p>
+            <p className="mt-1 text-sm text-red-400">{fieldErrors.title[0]}</p>
           )}
         </div>
 

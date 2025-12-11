@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
+import { cache } from "react";
+import { unstable_noStore } from "next/cache";
 
 /**
  * Prisma Client Singleton
@@ -29,3 +31,20 @@ export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
+
+/**
+ * Prüft, ob die Datenbankverbindung funktioniert.
+ * - unstable_noStore(): Verhindert Caching über Requests hinweg
+ * - cache(): Dedupliziert Aufrufe innerhalb eines Requests
+ */
+export const checkDatabaseConnection = cache(async (): Promise<boolean> => {
+  // Kein Caching über Requests hinweg - DB-Status muss immer aktuell sein
+  unstable_noStore();
+
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return true;
+  } catch {
+    return false;
+  }
+});

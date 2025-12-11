@@ -65,9 +65,7 @@ export default function DatenschutzPage() {
         </section>
 
         <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-6 shadow-md">
-          <h2 className="text-xl font-semibold text-white mb-3">
-            Sicherheit
-          </h2>
+          <h2 className="text-xl font-semibold text-white mb-3">Sicherheit</h2>
           <p className="text-slate-300">
             Passwörter werden mit bcrypt gehasht. Eingaben werden serverseitig
             mittels Zod validiert. Die Session-Verwaltung erfolgt über

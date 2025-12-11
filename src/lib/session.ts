@@ -1,6 +1,7 @@
 import { getIronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
 import { UserRole } from "@prisma/client";
+import { checkDatabaseConnection } from "./db";
 
 /**
  * Session-Daten Interface
@@ -11,6 +12,14 @@ export interface SessionData {
   email?: string;
   role?: UserRole;
   isLoggedIn: boolean;
+}
+
+/**
+ * App-Status Interface - kombiniert Session und System-Status
+ */
+export interface AppStatus {
+  session: SessionData;
+  dbConnected: boolean;
 }
 
 /**
@@ -86,4 +95,18 @@ export async function destroySession(): Promise<void> {
   );
 
   session.destroy();
+}
+
+/**
+ * Holt den gesamten App-Status (Session + DB-Verbindung)
+ * Beide Prüfungen werden parallel ausgeführt.
+ * checkDatabaseConnection() ist gecached - wird nur einmal pro Request ausgeführt.
+ */
+export async function getAppStatus(): Promise<AppStatus> {
+  const [session, dbConnected] = await Promise.all([
+    getSession(),
+    checkDatabaseConnection(),
+  ]);
+
+  return { session, dbConnected };
 }

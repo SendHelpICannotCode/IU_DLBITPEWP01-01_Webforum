@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, checkDatabaseConnection } from "@/lib/db";
 import { getSession } from "@/lib/session";
 import { createThreadSchema, updateThreadSchema } from "@/lib/validations";
 
@@ -16,10 +16,15 @@ export type ActionResult = {
 };
 
 /**
- * Holt alle Threads mit Autor und Antworten-Zähler
+ * Rückgabetyp für getThreads mit optionalem Datenbankfehler
  */
-export async function getThreads() {
-  const threads = await prisma.thread.findMany({
+export type GetThreadsResult = {
+  threads: Awaited<ReturnType<typeof fetchThreads>>;
+  dbError: boolean;
+};
+
+async function fetchThreads() {
+  return prisma.thread.findMany({
     orderBy: { createdAt: "desc" },
     include: {
       author: {
@@ -34,8 +39,21 @@ export async function getThreads() {
       },
     },
   });
+}
 
-  return threads;
+/**
+ * Holt alle Threads mit Autor und Antworten-Zähler
+ * Nutzt den gecacheten DB-Status - wird nur einmal pro Request geprüft
+ */
+export async function getThreads(): Promise<GetThreadsResult> {
+  const dbConnected = await checkDatabaseConnection();
+
+  if (!dbConnected) {
+    return { threads: [], dbError: true };
+  }
+
+  const threads = await fetchThreads();
+  return { threads, dbError: false };
 }
 
 /**

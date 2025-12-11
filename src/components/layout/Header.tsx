@@ -22,9 +22,11 @@ interface HeaderProps {
     username: string;
     role: "USER" | "ADMIN";
   } | null;
+  /** Ist die Datenbank verbunden? */
+  dbConnected?: boolean;
 }
 
-export function Header({ user }: HeaderProps) {
+export function Header({ user, dbConnected = true }: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isLoggingOut, startLogoutTransition] = useTransition();
 
@@ -46,15 +48,7 @@ export function Header({ user }: HeaderProps) {
           <span className="hidden sm:inline">CyberForum</span>
         </Link>
 
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-6">
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-300 transition-colors hover:text-cyan-400"
-          >
-            Forum
-          </Link>
-        </nav>
+        <nav className="hidden md:flex items-center gap-6"></nav>
 
         {/* Auth Buttons (Desktop) */}
         <div className="hidden md:flex items-center gap-3">
@@ -75,7 +69,7 @@ export function Header({ user }: HeaderProps) {
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                disabled={isLoggingOut}
+                disabled={isLoggingOut || !dbConnected}
               >
                 {isLoggingOut ? (
                   <>
@@ -90,7 +84,7 @@ export function Header({ user }: HeaderProps) {
                 )}
               </Button>
             </>
-          ) : (
+          ) : dbConnected ? (
             <>
               <Link href="/login">
                 <Button variant="ghost" size="sm">
@@ -104,6 +98,17 @@ export function Header({ user }: HeaderProps) {
                   Registrieren
                 </Button>
               </Link>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" disabled>
+                <LogIn className="mr-2 h-4 w-4" />
+                Login
+              </Button>
+              <Button variant="primary" size="sm" disabled>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Registrieren
+              </Button>
             </>
           )}
         </div>
@@ -130,15 +135,7 @@ export function Header({ user }: HeaderProps) {
         )}
       >
         <nav className="container flex flex-col gap-4 py-4 border-t border-slate-800">
-          <Link
-            href="/"
-            className="text-sm font-medium text-slate-300 hover:text-cyan-400"
-            onClick={() => setMobileMenuOpen(false)}
-          >
-            Forum
-          </Link>
-
-          <div className="flex flex-col gap-2 pt-4 border-t border-slate-800">
+          <div className="flex flex-col gap-2">
             {user ? (
               <>
                 <span className="text-sm text-slate-400 flex items-center gap-1.5">
@@ -157,7 +154,7 @@ export function Header({ user }: HeaderProps) {
                   size="sm"
                   className="justify-start"
                   onClick={handleLogout}
-                  disabled={isLoggingOut}
+                  disabled={isLoggingOut || !dbConnected}
                 >
                   {isLoggingOut ? (
                     <>
@@ -172,7 +169,7 @@ export function Header({ user }: HeaderProps) {
                   )}
                 </Button>
               </>
-            ) : (
+            ) : dbConnected ? (
               <>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                   <Button
@@ -194,6 +191,27 @@ export function Header({ user }: HeaderProps) {
                     Registrieren
                   </Button>
                 </Link>
+              </>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full justify-start"
+                  disabled
+                >
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="w-full justify-start"
+                  disabled
+                >
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Registrieren
+                </Button>
               </>
             )}
           </div>

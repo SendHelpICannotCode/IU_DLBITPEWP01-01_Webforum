@@ -61,7 +61,7 @@ export function ThreadCard({ thread }: ThreadCardProps) {
 
   return (
     <Link href={`/forum/thread/${thread.id}`}>
-      <Card className="group transition-all hover:border-cyan-800/50 hover:bg-slate-800/50">
+      <Card className="group transition-all hover:border-cyan-800/50 hover:bg-slate-800/50 mb-4">
         <div className="p-5">
           {/* Titel */}
           <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors line-clamp-1">

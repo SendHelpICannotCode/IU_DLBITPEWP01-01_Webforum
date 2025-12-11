@@ -4,11 +4,7 @@ import { ArrowLeft, MessageSquare, User, Users } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThread } from "@/actions/threads";
 import { Card, CardContent, Button } from "@/components/ui";
-import {
-  PostCard,
-  PostForm,
-  ThreadContent,
-} from "@/components/forum";
+import { PostCard, PostForm, ThreadContent } from "@/components/forum";
 import { cn } from "@/lib/utils";
 
 interface ThreadPageProps {
@@ -28,10 +24,10 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
   const canModerate = isOwnThread || session.role === "ADMIN";
 
   return (
-    <div className="container py-8">
+    <div className="container pt-8 pb-16">
       {/* Zurück-Link */}
       <Link
-        href="/forum"
+        href="/"
         className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -101,7 +97,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
         </h2>
 
         {thread.posts.length > 0 ? (
-          <div className="space-y-4 mb-8">
+          <div className="space-y-6 mb-8">
             {thread.posts.map((post) => (
               <PostCard
                 key={post.id}

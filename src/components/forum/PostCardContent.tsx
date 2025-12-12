@@ -44,6 +44,19 @@ export function PostCardContent({
     }
   }, [postId, currentVersion]);
 
+  // Props aktualisieren, wenn sich content oder currentVersion ändern
+  // (z.B. nach einer Bearbeitung durch router.refresh())
+  useEffect(() => {
+    // Wenn gerade eine ältere Version angesehen wird, zurück zur aktuellen Version springen
+    // (z.B. wenn eine neue Bearbeitung stattgefunden hat)
+    if (isViewingHistory) {
+      setIsViewingHistory(false);
+    }
+    // Immer den Display-State mit den aktuellen Props aktualisieren
+    setDisplayContent(content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [content, currentVersion]);
+
   function handleVersionChange(version: number, versionContent: string) {
     if (version === currentVersion || !versionContent) {
       // Zurück zur aktuellen Version

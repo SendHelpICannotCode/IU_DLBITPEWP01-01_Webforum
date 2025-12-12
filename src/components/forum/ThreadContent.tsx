@@ -55,6 +55,20 @@ export function ThreadContent({
     }
   }, [threadId, currentVersion]);
 
+  // Props aktualisieren, wenn sich title, content oder currentVersion ändern
+  // (z.B. nach einer Bearbeitung durch router.refresh())
+  useEffect(() => {
+    // Wenn gerade eine ältere Version angesehen wird, zurück zur aktuellen Version springen
+    // (z.B. wenn eine neue Bearbeitung stattgefunden hat)
+    if (isViewingHistory) {
+      setIsViewingHistory(false);
+    }
+    // Immer den Display-State mit den aktuellen Props aktualisieren
+    setDisplayTitle(title);
+    setDisplayContent(content);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, content, currentVersion]);
+
   function handleVersionChange(
     version: number,
     versionContent: string,

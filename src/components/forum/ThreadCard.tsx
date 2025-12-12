@@ -62,19 +62,19 @@ export function ThreadCard({ thread }: ThreadCardProps) {
   return (
     <Link href={`/forum/thread/${thread.id}`} className="cursor-pointer">
       <Card className="group transition-all hover:border-cyan-800/50 hover:bg-slate-800/50 mb-4">
-        <div className="p-5">
+        <div className="p-6">
           {/* Titel */}
-          <h3 className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors line-clamp-1">
+          <h3 className="text-xl font-semibold text-white group-hover:text-[var(--accent-hover)] transition-colors line-clamp-1 mb-2">
             {thread.title}
           </h3>
 
           {/* Vorschau des Inhalts */}
-          <p className="mt-2 text-sm text-slate-400 line-clamp-2">
+          <p className="mb-4 text-sm text-slate-400 line-clamp-2">
             {thread.content}
           </p>
 
           {/* Meta-Informationen */}
-          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-slate-500">
+          <div className="pt-3 border-t border-slate-800/50 flex flex-wrap items-center gap-4 text-xs text-slate-500">
             {/* Autor */}
             <div className="flex items-center gap-1.5">
               <User className="h-3.5 w-3.5" />

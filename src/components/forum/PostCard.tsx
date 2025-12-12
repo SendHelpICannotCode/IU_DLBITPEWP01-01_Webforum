@@ -42,9 +42,9 @@ export function PostCard({
         isOwnPost && "border-cyan-900/50 bg-cyan-950/20"
       )}
     >
-      <div className="p-5">
+      <div className="p-6">
         {/* Header mit Autor */}
-        <div className="flex flex-wrap items-center justify-between gap-2 mb-3 pb-3 border-b border-slate-800">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
             {/* Avatar Placeholder */}
             <div
@@ -103,7 +103,7 @@ export function PostCard({
           />
         ) : (
           canModerate && (
-            <div className="mt-4 pt-3 border-t border-slate-800 flex items-center gap-3">
+            <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}

@@ -12,7 +12,7 @@ export default async function HomePage() {
   ]);
 
   return (
-    <div className="container py-8">
+    <div className="container">
       {/* Header-Bereich */}
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

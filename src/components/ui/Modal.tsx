@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "./Button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -110,25 +111,22 @@ export function ConfirmModal({
       <p className="text-slate-300 mb-6">{message}</p>
 
       <div className="flex justify-end gap-3">
-        <button
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={onClose}
           disabled={isLoading}
-          className="px-4 py-2 rounded-lg text-sm font-medium text-slate-300 hover:bg-slate-800 transition-colors disabled:opacity-50"
         >
           {cancelText}
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={variant === "danger" ? "danger" : "primary"}
+          size="sm"
           onClick={onConfirm}
           disabled={isLoading}
-          className={cn(
-            "px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50",
-            variant === "danger" && "bg-red-600 text-white hover:bg-red-700",
-            variant === "warning" &&
-              "bg-amber-600 text-white hover:bg-amber-700"
-          )}
         >
           {isLoading ? "Wird gelöscht..." : confirmText}
-        </button>
+        </Button>
       </div>
     </Modal>
   );

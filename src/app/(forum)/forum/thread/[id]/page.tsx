@@ -27,7 +27,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
   // Bei DB-Fehler: Fehlermeldung anzeigen
   if (dbError) {
     return (
-      <div className="container pt-8 pb-16">
+      <div className="container">
         <Link
           href="/"
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-6"
@@ -63,7 +63,7 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
   const canModerate = isOwnThread || session.role === "ADMIN";
 
   return (
-    <div className="container pt-8 pb-16">
+    <div className="container">
       {/* Zurück-Link */}
       <Link
         href="/"

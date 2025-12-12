@@ -1,6 +1,6 @@
 export default function DatenschutzPage() {
   return (
-    <div className="container py-12">
+    <div className="container">
       <div className="max-w-3xl space-y-6">
         <div>
           <h1 className="text-3xl font-bold text-white mb-2">

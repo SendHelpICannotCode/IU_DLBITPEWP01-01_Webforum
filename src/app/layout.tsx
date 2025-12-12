@@ -45,7 +45,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-screen flex-col`}
       >
         <Header user={user} dbConnected={dbConnected} />
-        <main className="flex-1 my-8">{children}</main>
+        <main className="flex-1 py-8">{children}</main>
         <Footer />
       </body>
     </html>

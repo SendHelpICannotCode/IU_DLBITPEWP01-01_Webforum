@@ -18,16 +18,22 @@ model User {
 }
 
 model Thread {
-  id             String          @id @default(cuid())
+  id             String           @id @default(cuid())
   title          String
   content        String
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  currentVersion Int             @default(1)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  currentVersion Int              @default(1)
   authorId       String
+  isLocked       Boolean          @default(false)
+  lockedAt       DateTime?
+  lockedBy       String?
   posts          Post[]
-  author         User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author         User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
   versions       ThreadVersion[]
+  categories     ThreadCategory[]
+
+  @@index([isLocked])
 }
 
 model ThreadVersion {
@@ -66,6 +72,30 @@ model PostVersion {
 
   @@unique([postId, version])
   @@index([postId])
+}
+
+model Category {
+  id          String           @id @default(cuid())
+  name        String           @unique
+  description String?
+  color       String?
+  keywords    String[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  threads     ThreadCategory[]
+}
+
+model ThreadCategory {
+  id         String   @id @default(cuid())
+  threadId   String
+  categoryId String
+  createdAt  DateTime @default(now())
+  thread     Thread   @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([threadId, categoryId])
+  @@index([threadId])
+  @@index([categoryId])
 }
 
 enum UserRole {

@@ -1,15 +1,28 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState, useEffect } from "react";
 import { PlusCircle, Loader2 } from "lucide-react";
 import { Button, Input, Textarea } from "@/components/ui";
 import { createThread, type ActionResult } from "@/actions/threads";
+import { CategoryTagsInput } from "./CategoryTagsInput";
+import { getCategories } from "@/actions/categories";
 
 export function ThreadForm() {
   const [state, formAction, isPending] = useActionState<
     ActionResult | null,
     FormData
   >(createThread, null);
+  const [availableCategories, setAvailableCategories] = useState<
+    Array<{ id: string; name: string; color?: string | null }>
+  >([]);
+  const [selectedCategories, setSelectedCategories] = useState<
+    Array<{ id: string; name: string; color?: string | null }>
+  >([]);
+
+  // Lade verfügbare Kategorien
+  useEffect(() => {
+    getCategories().then(setAvailableCategories).catch(console.error);
+  }, []);
 
   return (
     <form action={formAction} className="space-y-4">
@@ -56,6 +69,14 @@ export function ThreadForm() {
           </p>
         )}
       </div>
+
+      {/* Kategorien */}
+      <CategoryTagsInput
+        selectedCategories={selectedCategories}
+        availableCategories={availableCategories}
+        onChange={setSelectedCategories}
+        disabled={isPending}
+      />
 
       {/* Submit Button */}
       <Button type="submit" disabled={isPending} className="w-full sm:w-auto">

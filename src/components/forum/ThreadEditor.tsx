@@ -1,15 +1,24 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Save, X } from "lucide-react";
 import { Input, Textarea, Button } from "@/components/ui";
 import { updateThread } from "@/actions/threads";
+import { CategoryTagsInput } from "./CategoryTagsInput";
+import { getCategories } from "@/actions/categories";
+
+interface Category {
+  id: string;
+  name: string;
+  color?: string | null;
+}
 
 interface ThreadEditorProps {
   threadId: string;
   currentTitle: string;
   currentContent: string;
+  currentCategories?: Category[];
   onCancel: () => void;
   onSuccess: () => void;
 }
@@ -18,6 +27,7 @@ export function ThreadEditor({
   threadId,
   currentTitle,
   currentContent,
+  currentCategories = [],
   onCancel,
   onSuccess,
 }: ThreadEditorProps) {
@@ -25,6 +35,19 @@ export function ThreadEditor({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
+  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
+  const [selectedCategories, setSelectedCategories] =
+    useState<Category[]>(currentCategories);
+
+  // Lade verfügbare Kategorien
+  useEffect(() => {
+    getCategories().then(setAvailableCategories).catch(console.error);
+  }, []);
+
+  // Aktualisiere selectedCategories wenn currentCategories sich ändert
+  useEffect(() => {
+    setSelectedCategories(currentCategories);
+  }, [currentCategories]);
 
   async function handleSubmit(formData: FormData) {
     setError(null);
@@ -99,6 +122,14 @@ export function ThreadEditor({
             </p>
           )}
         </div>
+
+        {/* Kategorien */}
+        <CategoryTagsInput
+          selectedCategories={selectedCategories}
+          availableCategories={availableCategories}
+          onChange={setSelectedCategories}
+          disabled={isPending}
+        />
 
         {/* Buttons */}
         <div className="flex justify-end gap-3 pt-2">

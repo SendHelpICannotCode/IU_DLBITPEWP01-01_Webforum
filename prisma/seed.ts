@@ -23,7 +23,9 @@ async function main() {
 
   // Clean Up (Alles löschen, um Duplikate zu vermeiden)
   await prisma.post.deleteMany()
+  await prisma.threadCategory.deleteMany()
   await prisma.thread.deleteMany()
+  await prisma.category.deleteMany()
   await prisma.user.deleteMany()
 
   // Passwörter hashen (für Seed-Daten: alle haben das Passwort "test1234")
@@ -71,6 +73,35 @@ async function main() {
     },
   })
 
+  // --- KATEGORIEN ERSTELLEN ---
+
+  const categoryAllgemein = await prisma.category.create({
+    data: {
+      name: 'Allgemeines',
+      description: 'Allgemeine Diskussionen und Themen',
+      color: '#3b82f6', // Blau
+      keywords: ['allgemein', 'diskussion', 'chat', 'plaudern'],
+    },
+  })
+
+  const categoryTechnik = await prisma.category.create({
+    data: {
+      name: 'Technik',
+      description: 'Technische Fragen und Diskussionen',
+      color: '#10b981', // Grün
+      keywords: ['technik', 'code', 'programmierung', 'software', 'entwicklung'],
+    },
+  })
+
+  const categoryOffTopic = await prisma.category.create({
+    data: {
+      name: 'Off-Topic',
+      description: 'Alles was nicht in andere Kategorien passt',
+      color: '#f59e0b', // Orange
+      keywords: ['offtopic', 'spaß', 'unterhaltung', 'random'],
+    },
+  })
+
   // --- THREADS & POSTS ERSTELLEN ---
 
   // Thread 1: Willkommen (vom Admin)
@@ -80,6 +111,9 @@ async function main() {
       content:
         'Herzlich willkommen in unserem Community-Forum! Hier könnt ihr euch austauschen, Fragen stellen und Diskussionen führen. Bitte beachtet unsere Forenregeln und seid respektvoll zueinander.',
       authorId: admin.id,
+      categories: {
+        create: [{ categoryId: categoryAllgemein.id }],
+      },
     },
   })
 
@@ -106,6 +140,12 @@ async function main() {
       content:
         'In diesem Thread könnt ihr euch kurz vorstellen. Wer seid ihr, was sind eure Interessen und was erhofft ihr euch von diesem Forum?',
       authorId: modUser.id,
+      categories: {
+        create: [
+          { categoryId: categoryAllgemein.id },
+          { categoryId: categoryOffTopic.id },
+        ],
+      },
     },
   })
 
@@ -125,6 +165,9 @@ async function main() {
       content:
         'Hat jemand Erfahrung mit TypeScript Generics? Ich versuche gerade, eine typsichere Funktion zu schreiben, aber stoße auf Probleme mit den Constraints.',
       authorId: user2.id,
+      categories: {
+        create: [{ categoryId: categoryTechnik.id }],
+      },
     },
   })
 

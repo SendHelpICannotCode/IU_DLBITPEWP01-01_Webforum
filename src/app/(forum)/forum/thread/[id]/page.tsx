@@ -15,6 +15,7 @@ import {
   PostForm,
   ThreadContent,
   PostsPaginationWrapper,
+  LockedThreadBanner,
 } from "@/components/forum";
 import { cn } from "@/lib/utils";
 import { paginationSchema } from "@/lib/validations";
@@ -80,6 +81,8 @@ export default async function ThreadPage({
   const isAdmin = thread.author.role === "ADMIN";
   const isOwnThread = session.userId === thread.author.id;
   const canModerate = isOwnThread || session.role === "ADMIN";
+  const isSessionAdmin = session.role === "ADMIN";
+  const isThreadLocked = thread.isLocked || false;
 
   return (
     <div className="container">
@@ -91,6 +94,11 @@ export default async function ThreadPage({
         <ArrowLeft className="h-4 w-4" />
         Zurück zur Übersicht
       </Link>
+
+      {/* Locked Thread Banner */}
+      {isThreadLocked && (
+        <LockedThreadBanner className="mb-6" />
+      )}
 
       {/* Thread Header */}
       <Card className="mb-6">
@@ -150,6 +158,11 @@ export default async function ThreadPage({
             createdAt={thread.createdAt}
             updatedAt={thread.updatedAt}
             canModerate={canModerate}
+            isLocked={isThreadLocked}
+            isAdmin={isSessionAdmin}
+            currentCategories={
+              thread.categories?.map((tc) => tc.category) || []
+            }
           />
         </div>
       </Card>

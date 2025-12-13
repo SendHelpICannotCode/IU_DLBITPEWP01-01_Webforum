@@ -27,11 +27,27 @@ export type GetThreadsResult = {
   dbError: boolean;
 };
 
-async function fetchThreads(page: number, pageSize: number) {
+async function fetchThreads(
+  page: number,
+  pageSize: number,
+  categoryIds?: string[]
+) {
   const skip = (page - 1) * pageSize;
   return prisma.thread.findMany({
     skip,
     take: pageSize,
+    where:
+      categoryIds && categoryIds.length > 0
+        ? {
+            categories: {
+              some: {
+                categoryId: {
+                  in: categoryIds,
+                },
+              },
+            },
+          }
+        : undefined,
     orderBy: { createdAt: "desc" },
     include: {
       author: {
@@ -44,6 +60,11 @@ async function fetchThreads(page: number, pageSize: number) {
       _count: {
         select: { posts: true },
       },
+      categories: {
+        include: {
+          category: true,
+        },
+      },
     },
   });
 }
@@ -54,7 +75,8 @@ async function fetchThreads(page: number, pageSize: number) {
  */
 export async function getThreads(
   page: number = 1,
-  pageSize: number = 15
+  pageSize: number = 15,
+  categoryIds?: string[]
 ): Promise<GetThreadsResult> {
   const dbConnected = await checkDatabaseConnection();
 
@@ -74,10 +96,26 @@ export async function getThreads(
   // Validierung: pageSize muss erlaubter Wert sein
   const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
 
+  // Filter für Kategorien
+  const whereClause =
+    categoryIds && categoryIds.length > 0
+      ? {
+          categories: {
+            some: {
+              categoryId: {
+                in: categoryIds,
+              },
+            },
+          },
+        }
+      : undefined;
+
   // Parallel: Threads laden und totalCount ermitteln
   const [threads, totalCount] = await Promise.all([
-    fetchThreads(validPage, validPageSize),
-    prisma.thread.count(),
+    fetchThreads(validPage, validPageSize, categoryIds),
+    prisma.thread.count({
+      where: whereClause,
+    }),
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
@@ -86,7 +124,7 @@ export async function getThreads(
   // Falls page > totalPages, nochmal mit korrigierter page laden
   const finalThreads =
     finalPage !== validPage
-      ? await fetchThreads(finalPage, validPageSize)
+      ? await fetchThreads(finalPage, validPageSize, categoryIds)
       : threads;
 
   return {
@@ -121,6 +159,11 @@ async function fetchThread(id: string) {
           id: true,
           username: true,
           role: true,
+        },
+      },
+      categories: {
+        include: {
+          category: true,
         },
       },
     },
@@ -236,9 +279,16 @@ export async function createThread(
   }
 
   // 2. Eingaben extrahieren
+  const categoryIdsInput = formData.get("categoryIds");
+  const categoryIds = categoryIdsInput
+    ? (categoryIdsInput as string).split(",").filter((id) => id.trim())
+    : undefined;
+
   const rawData = {
     title: formData.get("title"),
     content: formData.get("content"),
+    categoryIds:
+      categoryIds && categoryIds.length > 0 ? categoryIds : undefined,
   };
 
   // 3. Zod-Validierung
@@ -254,7 +304,7 @@ export async function createThread(
     };
   }
 
-  const { title, content } = parsed.data;
+  const { title, content, categoryIds: validCategoryIds } = parsed.data;
 
   try {
     // 4. Thread erstellen
@@ -263,6 +313,14 @@ export async function createThread(
         title,
         content,
         authorId: session.userId,
+        categories:
+          validCategoryIds && validCategoryIds.length > 0
+            ? {
+                create: validCategoryIds.map((categoryId) => ({
+                  categoryId,
+                })),
+              }
+            : undefined,
       },
     });
 
@@ -330,9 +388,16 @@ export async function updateThread(
   }
 
   // 3. Eingaben extrahieren
+  const categoryIdsInput = formData.get("categoryIds");
+  const categoryIds = categoryIdsInput
+    ? (categoryIdsInput as string).split(",").filter((id) => id.trim())
+    : undefined;
+
   const rawData = {
     title: formData.get("title"),
     content: formData.get("content"),
+    categoryIds:
+      categoryIds && categoryIds.length > 0 ? categoryIds : undefined,
   };
 
   // 4. Zod-Validierung
@@ -359,16 +424,35 @@ export async function updateThread(
       },
     });
 
-    // 6. Thread aktualisieren mit erhöhter Versionsnummer
+    // 6. Kategorien aktualisieren (wenn categoryIds vorhanden)
+    if (parsed.data.categoryIds !== undefined) {
+      // Alte Zuordnungen löschen
+      await prisma.threadCategory.deleteMany({
+        where: { threadId },
+      });
+
+      // Neue Zuordnungen erstellen (falls vorhanden)
+      if (parsed.data.categoryIds.length > 0) {
+        await prisma.threadCategory.createMany({
+          data: parsed.data.categoryIds.map((categoryId) => ({
+            threadId,
+            categoryId,
+          })),
+        });
+      }
+    }
+
+    // 7. Thread aktualisieren mit erhöhter Versionsnummer
     await prisma.thread.update({
       where: { id: threadId },
       data: {
-        ...parsed.data,
+        title: parsed.data.title,
+        content: parsed.data.content,
         currentVersion: existingThread.currentVersion + 1,
       },
     });
 
-    // 7. Cache invalidieren
+    // 8. Cache invalidieren
     revalidatePath("/forum");
     revalidatePath(`/forum/thread/${threadId}`);
 
@@ -408,6 +492,201 @@ export async function getThreadVersion(threadId: string, version: number) {
   });
 
   return threadVersion;
+}
+
+/**
+ * Sperrt einen Thread (nur Admin)
+ */
+export async function lockThread(threadId: string): Promise<ActionResult> {
+  const session = await getSession();
+
+  if (!session.isLoggedIn || session.role !== "ADMIN") {
+    return {
+      success: false,
+      error: "Nur Administratoren können Threads sperren",
+    };
+  }
+
+  const existingThread = await prisma.thread.findUnique({
+    where: { id: threadId },
+  });
+
+  if (!existingThread) {
+    return {
+      success: false,
+      error: "Thema nicht gefunden",
+    };
+  }
+
+  if (existingThread.isLocked) {
+    return {
+      success: false,
+      error: "Thread ist bereits gesperrt",
+    };
+  }
+
+  try {
+    await prisma.thread.update({
+      where: { id: threadId },
+      data: {
+        isLocked: true,
+        lockedAt: new Date(),
+        lockedBy: session.userId,
+      },
+    });
+
+    revalidatePath(`/forum/thread/${threadId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Thread-Sperr-Fehler:", error);
+    return {
+      success: false,
+      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    };
+  }
+}
+
+/**
+ * Entsperrt einen Thread (nur Admin)
+ */
+export async function unlockThread(threadId: string): Promise<ActionResult> {
+  const session = await getSession();
+
+  if (!session.isLoggedIn || session.role !== "ADMIN") {
+    return {
+      success: false,
+      error: "Nur Administratoren können Threads entsperren",
+    };
+  }
+
+  const existingThread = await prisma.thread.findUnique({
+    where: { id: threadId },
+  });
+
+  if (!existingThread) {
+    return {
+      success: false,
+      error: "Thema nicht gefunden",
+    };
+  }
+
+  if (!existingThread.isLocked) {
+    return {
+      success: false,
+      error: "Thread ist nicht gesperrt",
+    };
+  }
+
+  try {
+    await prisma.thread.update({
+      where: { id: threadId },
+      data: {
+        isLocked: false,
+        lockedAt: null,
+        lockedBy: null,
+      },
+    });
+
+    revalidatePath(`/forum/thread/${threadId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Thread-Entsperr-Fehler:", error);
+    return {
+      success: false,
+      error: "Ein Fehler ist aufgetreten. Bitte versuche es erneut.",
+    };
+  }
+}
+
+/**
+ * Holt alle gesperrten Threads (nur Admin, mit Pagination)
+ */
+export async function getLockedThreads(
+  page: number = 1,
+  pageSize: number = 15
+) {
+  const session = await getSession();
+
+  if (!session.isLoggedIn || session.role !== "ADMIN") {
+    return {
+      threads: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 15,
+      totalPages: 0,
+    };
+  }
+
+  const validPage = Math.max(1, page);
+  const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
+  const skip = (validPage - 1) * validPageSize;
+
+  const [threads, totalCount] = await Promise.all([
+    prisma.thread.findMany({
+      where: { isLocked: true },
+      skip,
+      take: validPageSize,
+      orderBy: { lockedAt: "desc" },
+      include: {
+        author: {
+          select: {
+            id: true,
+            username: true,
+            role: true,
+          },
+        },
+        _count: {
+          select: { posts: true },
+        },
+        categories: {
+          include: {
+            category: true,
+          },
+        },
+      },
+    }),
+    prisma.thread.count({
+      where: { isLocked: true },
+    }),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
+  const finalPage = Math.min(validPage, totalPages);
+
+  const finalThreads =
+    finalPage !== validPage
+      ? await prisma.thread.findMany({
+          where: { isLocked: true },
+          skip: (finalPage - 1) * validPageSize,
+          take: validPageSize,
+          orderBy: { lockedAt: "desc" },
+          include: {
+            author: {
+              select: {
+                id: true,
+                username: true,
+                role: true,
+              },
+            },
+            _count: {
+              select: { posts: true },
+            },
+            categories: {
+              include: {
+                category: true,
+              },
+            },
+          },
+        })
+      : threads;
+
+  return {
+    threads: finalThreads,
+    totalCount,
+    page: finalPage,
+    pageSize: validPageSize,
+    totalPages,
+  };
 }
 
 /**

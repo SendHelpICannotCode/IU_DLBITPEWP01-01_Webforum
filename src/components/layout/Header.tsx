@@ -9,6 +9,7 @@ import {
   UserPlus,
   LogOut,
   Loader2,
+  Shield,
 } from "lucide-react";
 import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
@@ -54,6 +55,14 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
         <div className="hidden md:flex items-center gap-3">
           {user ? (
             <>
+              {user.role === "ADMIN" && (
+                <Link href="/forum/admin">
+                  <Button variant="outline" size="sm">
+                    <Shield className="mr-2 h-4 w-4" />
+                    Admin
+                  </Button>
+                </Link>
+              )}
               <span className="text-sm text-slate-400">
                 Hallo,{" "}
                 <span className="font-medium text-cyan-400">
@@ -138,6 +147,21 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
           <div className="flex flex-col gap-2">
             {user ? (
               <>
+                {user.role === "ADMIN" && (
+                  <Link
+                    href="/forum/admin"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full justify-start"
+                    >
+                      <Shield className="mr-2 h-4 w-4" />
+                      Admin
+                    </Button>
+                  </Link>
+                )}
                 <span className="text-sm text-slate-400 flex items-center gap-1.5">
                   Eingeloggt als{" "}
                   <span className="font-medium text-cyan-400">

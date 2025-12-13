@@ -39,6 +39,7 @@ export const createThreadSchema = z.object({
     .string()
     .min(10, "Inhalt muss mindestens 10 Zeichen lang sein")
     .max(10000, "Inhalt darf maximal 10.000 Zeichen lang sein"),
+  categoryIds: z.array(z.string().cuid()).optional(),
 });
 
 export const updateThreadSchema = createThreadSchema.partial();

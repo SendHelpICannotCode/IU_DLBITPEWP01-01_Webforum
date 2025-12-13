@@ -9,11 +9,20 @@ import {
   Button,
   PageSizeSelector,
 } from "@/components/ui";
-import { ThreadCard, ThreadForm, PaginationWrapper } from "@/components/forum";
+import {
+  ThreadCard,
+  ThreadForm,
+  PaginationWrapper,
+  CategoryFilter,
+} from "@/components/forum";
 import { paginationSchema } from "@/lib/validations";
 
 interface HomePageProps {
-  searchParams: Promise<{ page?: string; pageSize?: string }>;
+  searchParams: Promise<{
+    page?: string;
+    pageSize?: string;
+    categories?: string;
+  }>;
 }
 
 export default async function HomePage({ searchParams }: HomePageProps) {
@@ -28,8 +37,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
   const page = parsed.success ? parsed.data.page : 1;
   const pageSize = parsed.success ? parsed.data.pageSize : 15;
 
+  // Kategorie-Filter aus URL-Parametern
+  const categoryIds = params.categories
+    ? params.categories.split(",").filter((id) => id.trim())
+    : undefined;
+
   const [session, { threads, totalCount, totalPages, dbError }] =
-    await Promise.all([getSession(), getThreads(page, pageSize)]);
+    await Promise.all([getSession(), getThreads(page, pageSize, categoryIds)]);
 
   return (
     <div className="container">
@@ -79,13 +93,13 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         )}
       </div>
 
-      {/* PageSizeSelector (nur wenn DB erreichbar und Threads vorhanden) */}
-      {!dbError && totalCount > 0 && (
-        <div className="mb-4 flex justify-end">
-          <PageSizeSelector
-            currentPageSize={pageSize}
-            paramPrefix=""
-          />
+      {/* Filter und PageSizeSelector */}
+      {!dbError && (
+        <div className="mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <CategoryFilter />
+          {totalCount > 0 && (
+            <PageSizeSelector currentPageSize={pageSize} paramPrefix="" />
+          )}
         </div>
       )}
 

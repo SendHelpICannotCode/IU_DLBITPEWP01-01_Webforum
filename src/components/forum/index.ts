@@ -11,3 +11,7 @@ export { PostEditor } from "./PostEditor";
 export { ThreadEditor } from "./ThreadEditor";
 export { PaginationWrapper } from "./PaginationWrapper";
 export { PostsPaginationWrapper } from "./PostsPaginationWrapper";
+export { CategoryTagsInput } from "./CategoryTagsInput";
+export { LockThreadButton } from "./LockThreadButton";
+export { LockedThreadBanner } from "./LockedThreadBanner";
+export { CategoryFilter } from "./CategoryFilter";

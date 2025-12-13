@@ -5,6 +5,7 @@ import { VersionNavigator } from "./VersionNavigator";
 import { getThreadVersions } from "@/actions/threads";
 import { DeleteThreadButton } from "./DeleteThreadButton";
 import { ThreadEditor } from "./ThreadEditor";
+import { LockThreadButton } from "./LockThreadButton";
 import { Pencil } from "lucide-react";
 
 interface ThreadVersion {
@@ -22,6 +23,15 @@ interface ThreadContentProps {
   createdAt: Date;
   updatedAt: Date;
   canModerate?: boolean;
+  isLocked?: boolean;
+  isAdmin?: boolean;
+  currentCategories?: Category[];
+}
+
+interface Category {
+  id: string;
+  name: string;
+  color?: string | null;
 }
 
 export function ThreadContent({
@@ -32,6 +42,9 @@ export function ThreadContent({
   createdAt,
   updatedAt,
   canModerate,
+  isLocked = false,
+  isAdmin = false,
+  currentCategories = [],
 }: ThreadContentProps) {
   const [versions, setVersions] = useState<ThreadVersion[]>([]);
   const [displayTitle, setDisplayTitle] = useState(title);
@@ -162,20 +175,31 @@ export function ThreadContent({
           threadId={threadId}
           currentTitle={title}
           currentContent={content}
+          currentCategories={currentCategories}
           onCancel={() => setIsEditing(false)}
           onSuccess={() => setIsEditing(false)}
         />
       ) : (
         canModerate && (
-          <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setIsEditing(true)}
-              className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
-            >
-              <Pencil className="h-3 w-3" />
-              Bearbeiten
-            </button>
+          <div className="mt-4 pt-4 border-t border-slate-800 flex items-center gap-3 flex-wrap">
+            {!isLocked && (
+              <button
+                type="button"
+                onClick={() => setIsEditing(true)}
+                className="text-sm text-slate-500 hover:text-slate-300 transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <Pencil className="h-3 w-3" />
+                Bearbeiten
+              </button>
+            )}
+            {isLocked && !isAdmin && (
+              <span className="text-sm text-amber-400">
+                Thread ist gesperrt - Bearbeitung nicht möglich
+              </span>
+            )}
+            {isAdmin && (
+              <LockThreadButton threadId={threadId} isLocked={isLocked} />
+            )}
             <DeleteThreadButton threadId={threadId} />
           </div>
         )

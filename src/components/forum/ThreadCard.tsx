@@ -18,6 +18,13 @@ interface ThreadCardProps {
     _count: {
       posts: number;
     };
+    categories?: {
+      category: {
+        id: string;
+        name: string;
+        color?: string | null;
+      };
+    }[];
   };
 }
 
@@ -72,6 +79,34 @@ export function ThreadCard({ thread }: ThreadCardProps) {
           <p className="mb-4 text-sm text-slate-400 line-clamp-2">
             {thread.content}
           </p>
+
+          {/* Kategorie-Badges */}
+          {thread.categories && thread.categories.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {thread.categories.slice(0, 4).map(({ category }) => (
+                <span
+                  key={category.id}
+                  className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border"
+                  style={{
+                    backgroundColor: category.color
+                      ? `${category.color}20`
+                      : "rgba(51, 65, 85, 0.3)",
+                    borderColor: category.color
+                      ? `${category.color}40`
+                      : "rgba(51, 65, 85, 0.5)",
+                    color: category.color || "#cbd5e1",
+                  }}
+                >
+                  {category.name}
+                </span>
+              ))}
+              {thread.categories.length > 4 && (
+                <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800/50 border border-slate-700 text-slate-400">
+                  +{thread.categories.length - 4} weitere
+                </span>
+              )}
+            </div>
+          )}
 
           {/* Meta-Informationen */}
           <div className="pt-3 border-t border-slate-800/50 flex flex-wrap items-center gap-4 text-xs text-slate-500">

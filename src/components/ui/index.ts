@@ -13,3 +13,5 @@ export {
 export { Textarea } from "./Textarea";
 export type { TextareaProps } from "./Textarea";
 export { Modal, ConfirmModal } from "./Modal";
+export { Pagination } from "./Pagination";
+export { PageSizeSelector } from "./PageSizeSelector";

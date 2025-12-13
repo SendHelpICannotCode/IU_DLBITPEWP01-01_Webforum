@@ -2,14 +2,34 @@ import Link from "next/link";
 import { AlertTriangle, MessageSquare, PlusCircle, Users } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThreads } from "@/actions/threads";
-import { Card, CardHeader, CardContent, Button } from "@/components/ui";
-import { ThreadCard, ThreadForm } from "@/components/forum";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  Button,
+  PageSizeSelector,
+} from "@/components/ui";
+import { ThreadCard, ThreadForm, PaginationWrapper } from "@/components/forum";
+import { paginationSchema } from "@/lib/validations";
 
-export default async function HomePage() {
-  const [session, { threads, dbError }] = await Promise.all([
-    getSession(),
-    getThreads(),
-  ]);
+interface HomePageProps {
+  searchParams: Promise<{ page?: string; pageSize?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams;
+
+  // Validierung der URL-Parameter
+  const parsed = paginationSchema.safeParse({
+    page: params.page,
+    pageSize: params.pageSize,
+  });
+
+  const page = parsed.success ? parsed.data.page : 1;
+  const pageSize = parsed.success ? parsed.data.pageSize : 15;
+
+  const [session, { threads, totalCount, totalPages, dbError }] =
+    await Promise.all([getSession(), getThreads(page, pageSize)]);
 
   return (
     <div className="container">
@@ -22,8 +42,14 @@ export default async function HomePage() {
               <span className="text-amber-500">Offline</span>
             ) : (
               <span>
-                {threads.length}{" "}
-                {threads.length === 1 ? "Diskussion" : "Diskussionen"}
+                {totalCount} {totalCount === 1 ? "Diskussion" : "Diskussionen"}
+                {totalPages > 1 && (
+                  <>
+                    {" "}
+                    <span className="text-slate-600">•</span> Seite {page} von{" "}
+                    {totalPages}
+                  </>
+                )}
               </span>
             )}
             {session.isLoggedIn && (
@@ -53,6 +79,16 @@ export default async function HomePage() {
         )}
       </div>
 
+      {/* PageSizeSelector (nur wenn DB erreichbar und Threads vorhanden) */}
+      {!dbError && totalCount > 0 && (
+        <div className="mb-4 flex justify-end">
+          <PageSizeSelector
+            currentPageSize={pageSize}
+            paramPrefix=""
+          />
+        </div>
+      )}
+
       {/* Thread-Liste */}
       {dbError ? (
         <Card className="mb-12 border-amber-500/50">
@@ -67,11 +103,23 @@ export default async function HomePage() {
           </CardContent>
         </Card>
       ) : threads.length > 0 ? (
-        <div className="space-y-6 mb-12">
-          {threads.map((thread) => (
-            <ThreadCard key={thread.id} thread={thread} />
-          ))}
-        </div>
+        <>
+          <div className="space-y-6 mb-8">
+            {threads.map((thread) => (
+              <ThreadCard key={thread.id} thread={thread} />
+            ))}
+          </div>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mb-12">
+              <PaginationWrapper
+                currentPage={page}
+                totalPages={totalPages}
+                pageSize={pageSize}
+              />
+            </div>
+          )}
+        </>
       ) : (
         <Card className="mb-12">
           <CardContent className="py-12 text-center">

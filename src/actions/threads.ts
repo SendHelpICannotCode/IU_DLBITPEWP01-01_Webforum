@@ -20,11 +20,18 @@ export type ActionResult = {
  */
 export type GetThreadsResult = {
   threads: Awaited<ReturnType<typeof fetchThreads>>;
+  totalCount: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
   dbError: boolean;
 };
 
-async function fetchThreads() {
+async function fetchThreads(page: number, pageSize: number) {
+  const skip = (page - 1) * pageSize;
   return prisma.thread.findMany({
+    skip,
+    take: pageSize,
     orderBy: { createdAt: "desc" },
     include: {
       author: {
@@ -42,18 +49,54 @@ async function fetchThreads() {
 }
 
 /**
- * Holt alle Threads mit Autor und Antworten-Zähler
+ * Holt alle Threads mit Autor und Antworten-Zähler (mit Pagination)
  * Nutzt den gecacheten DB-Status - wird nur einmal pro Request geprüft
  */
-export async function getThreads(): Promise<GetThreadsResult> {
+export async function getThreads(
+  page: number = 1,
+  pageSize: number = 15
+): Promise<GetThreadsResult> {
   const dbConnected = await checkDatabaseConnection();
 
   if (!dbConnected) {
-    return { threads: [], dbError: true };
+    return {
+      threads: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 15,
+      totalPages: 0,
+      dbError: true,
+    };
   }
 
-  const threads = await fetchThreads();
-  return { threads, dbError: false };
+  // Validierung: page muss >= 1 sein
+  const validPage = Math.max(1, page);
+  // Validierung: pageSize muss erlaubter Wert sein
+  const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
+
+  // Parallel: Threads laden und totalCount ermitteln
+  const [threads, totalCount] = await Promise.all([
+    fetchThreads(validPage, validPageSize),
+    prisma.thread.count(),
+  ]);
+
+  const totalPages = Math.max(1, Math.ceil(totalCount / validPageSize));
+  const finalPage = Math.min(validPage, totalPages);
+
+  // Falls page > totalPages, nochmal mit korrigierter page laden
+  const finalThreads =
+    finalPage !== validPage
+      ? await fetchThreads(finalPage, validPageSize)
+      : threads;
+
+  return {
+    threads: finalThreads,
+    totalCount,
+    page: finalPage,
+    pageSize: validPageSize,
+    totalPages,
+    dbError: false,
+  };
 }
 
 /**
@@ -61,6 +104,11 @@ export async function getThreads(): Promise<GetThreadsResult> {
  */
 export type GetThreadResult = {
   thread: Awaited<ReturnType<typeof fetchThread>> | null;
+  posts: Awaited<ReturnType<typeof fetchPosts>>;
+  postsCount: number;
+  postsPage: number;
+  postsPageSize: number;
+  postsTotalPages: number;
   dbError: boolean;
 };
 
@@ -75,16 +123,23 @@ async function fetchThread(id: string) {
           role: true,
         },
       },
-      posts: {
-        orderBy: { createdAt: "asc" },
-        include: {
-          author: {
-            select: {
-              id: true,
-              username: true,
-              role: true,
-            },
-          },
+    },
+  });
+}
+
+async function fetchPosts(threadId: string, page: number, pageSize: number) {
+  const skip = (page - 1) * pageSize;
+  return prisma.post.findMany({
+    where: { threadId },
+    skip,
+    take: pageSize,
+    orderBy: { createdAt: "asc" },
+    include: {
+      author: {
+        select: {
+          id: true,
+          username: true,
+          role: true,
         },
       },
     },
@@ -92,18 +147,75 @@ async function fetchThread(id: string) {
 }
 
 /**
- * Holt einen einzelnen Thread mit Posts
+ * Holt einen einzelnen Thread mit paginierten Posts
  * Nutzt den gecacheten DB-Status
  */
-export async function getThread(id: string): Promise<GetThreadResult> {
+export async function getThread(
+  id: string,
+  postsPage: number = 1,
+  postsPageSize: number = 10
+): Promise<GetThreadResult> {
   const dbConnected = await checkDatabaseConnection();
 
   if (!dbConnected) {
-    return { thread: null, dbError: true };
+    return {
+      thread: null,
+      posts: [],
+      postsCount: 0,
+      postsPage: 1,
+      postsPageSize: 10,
+      postsTotalPages: 0,
+      dbError: true,
+    };
   }
 
-  const thread = await fetchThread(id);
-  return { thread, dbError: false };
+  // Validierung: postsPage muss >= 1 sein
+  const validPostsPage = Math.max(1, postsPage);
+  // Validierung: postsPageSize muss erlaubter Wert sein
+  const validPostsPageSize = [10, 15, 20, 50].includes(postsPageSize)
+    ? postsPageSize
+    : 10;
+
+  // Parallel: Thread und Posts laden, sowie Posts-Count ermitteln
+  const [thread, posts, postsCount] = await Promise.all([
+    fetchThread(id),
+    fetchPosts(id, validPostsPage, validPostsPageSize),
+    prisma.post.count({ where: { threadId: id } }),
+  ]);
+
+  if (!thread) {
+    return {
+      thread: null,
+      posts: [],
+      postsCount: 0,
+      postsPage: 1,
+      postsPageSize: validPostsPageSize,
+      postsTotalPages: 0,
+      dbError: false,
+    };
+  }
+
+  const postsTotalPages = Math.max(
+    1,
+    Math.ceil(postsCount / validPostsPageSize)
+  );
+  const finalPostsPage = Math.min(validPostsPage, postsTotalPages);
+
+  // Falls postsPage > postsTotalPages, nochmal mit korrigierter page laden
+  const finalPosts =
+    finalPostsPage !== validPostsPage
+      ? await fetchPosts(id, finalPostsPage, validPostsPageSize)
+      : posts;
+
+  return {
+    thread,
+    posts: finalPosts,
+    postsCount,
+    postsPage: finalPostsPage,
+    postsPageSize: validPostsPageSize,
+    postsTotalPages,
+    dbError: false,
+  };
 }
 
 /**

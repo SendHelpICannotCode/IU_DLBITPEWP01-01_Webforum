@@ -58,6 +58,20 @@ export const updatePostSchema = z.object({
     .max(5000, "Beitrag darf maximal 5.000 Zeichen lang sein"),
 });
 
+// ===== PAGINATION SCHEMAS =====
+
+export const paginationSchema = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .refine(
+      (val) => [10, 15, 20, 50].includes(val),
+      "Seitengröße muss 10, 15, 20 oder 50 sein"
+    )
+    .default(15),
+});
+
 // ===== TYPE EXPORTS =====
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -66,3 +80,4 @@ export type CreateThreadInput = z.infer<typeof createThreadSchema>;
 export type UpdateThreadInput = z.infer<typeof updateThreadSchema>;
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 export type UpdatePostInput = z.infer<typeof updatePostSchema>;
+export type PaginationInput = z.infer<typeof paginationSchema>;

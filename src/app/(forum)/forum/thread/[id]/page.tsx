@@ -9,20 +9,39 @@ import {
 } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThread } from "@/actions/threads";
-import { Card, CardContent, Button } from "@/components/ui";
-import { PostCard, PostForm, ThreadContent } from "@/components/forum";
+import { Card, CardContent, Button, PageSizeSelector } from "@/components/ui";
+import {
+  PostCard,
+  PostForm,
+  ThreadContent,
+  PostsPaginationWrapper,
+} from "@/components/forum";
 import { cn } from "@/lib/utils";
+import { paginationSchema } from "@/lib/validations";
 
 interface ThreadPageProps {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ postsPage?: string; postsPageSize?: string }>;
 }
 
-export default async function ThreadPage({ params }: ThreadPageProps) {
+export default async function ThreadPage({
+  params,
+  searchParams,
+}: ThreadPageProps) {
   const { id } = await params;
-  const [session, { thread, dbError }] = await Promise.all([
-    getSession(),
-    getThread(id),
-  ]);
+  const searchParamsData = await searchParams;
+
+  // Validierung der URL-Parameter für Posts-Pagination
+  const parsed = paginationSchema.safeParse({
+    page: searchParamsData.postsPage,
+    pageSize: searchParamsData.postsPageSize,
+  });
+
+  const postsPage = parsed.success ? parsed.data.page : 1;
+  const postsPageSize = parsed.success ? parsed.data.pageSize : 10;
+
+  const [session, { thread, posts, postsCount, postsTotalPages, dbError }] =
+    await Promise.all([getSession(), getThread(id, postsPage, postsPageSize)]);
 
   // Bei DB-Fehler: Fehlermeldung anzeigen
   if (dbError) {
@@ -109,8 +128,14 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
             <div className="flex items-center gap-1.5">
               <MessageSquare className="h-4 w-4" />
               <span>
-                {thread.posts.length}{" "}
-                {thread.posts.length === 1 ? "Antwort" : "Antworten"}
+                {postsCount} {postsCount === 1 ? "Antwort" : "Antworten"}
+                {postsTotalPages > 1 && (
+                  <>
+                    {" "}
+                    <span className="text-slate-600">•</span> Seite {postsPage}{" "}
+                    von {postsTotalPages}
+                  </>
+                )}
               </span>
             </div>
           </div>
@@ -131,22 +156,44 @@ export default async function ThreadPage({ params }: ThreadPageProps) {
 
       {/* Antworten */}
       <section>
-        <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
-          <MessageSquare className="h-5 w-5 text-cyan-500" />
-          Antworten ({thread.posts.length})
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold text-white flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-cyan-500" />
+            Antworten ({postsCount})
+          </h2>
+          {/* PageSizeSelector für Posts */}
+          {postsCount > 0 && (
+            <PageSizeSelector
+              currentPageSize={postsPageSize}
+              paramPrefix="posts"
+            />
+          )}
+        </div>
 
-        {thread.posts.length > 0 ? (
-          <div className="space-y-6 mb-8">
-            {thread.posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                currentUserId={session.userId}
-                currentUserRole={session.role}
-              />
-            ))}
-          </div>
+        {posts.length > 0 ? (
+          <>
+            <div className="space-y-6 mb-8">
+              {posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={post}
+                  currentUserId={session.userId}
+                  currentUserRole={session.role}
+                />
+              ))}
+            </div>
+            {/* Pagination für Posts */}
+            {postsTotalPages > 1 && (
+              <div className="mb-8">
+                <PostsPaginationWrapper
+                  threadId={id}
+                  currentPage={postsPage}
+                  totalPages={postsTotalPages}
+                  pageSize={postsPageSize}
+                />
+              </div>
+            )}
+          </>
         ) : (
           <Card className="mb-8">
             <CardContent className="py-8 text-center">

@@ -9,3 +9,5 @@ export { DeletePostButton } from "./DeletePostButton";
 export { VersionNavigator } from "./VersionNavigator";
 export { PostEditor } from "./PostEditor";
 export { ThreadEditor } from "./ThreadEditor";
+export { PaginationWrapper } from "./PaginationWrapper";
+export { PostsPaginationWrapper } from "./PostsPaginationWrapper";

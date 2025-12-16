@@ -67,9 +67,12 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
               )}
               <span className="text-sm text-slate-400">
                 Hallo,{" "}
-                <span className="font-medium text-cyan-400">
+                <Link
+                  href="/user"
+                  className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                >
                   {user.username}
-                </span>
+                </Link>
                 {user.role === "ADMIN" && (
                   <span className="ml-1.5 rounded bg-cyan-900/50 px-1.5 py-0.5 text-xs text-cyan-300">
                     Admin
@@ -166,9 +169,12 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
                 )}
                 <span className="text-sm text-slate-400 flex items-center gap-1.5">
                   Eingeloggt als{" "}
-                  <span className="font-medium text-cyan-400">
+                  <Link
+                    href="/user"
+                    className="font-medium text-cyan-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                  >
                     {user.username}
-                  </span>
+                  </Link>
                   {user.role === "ADMIN" && (
                     <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-xs text-cyan-300">
                       Admin

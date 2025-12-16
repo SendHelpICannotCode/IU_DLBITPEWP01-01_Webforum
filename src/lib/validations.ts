@@ -86,9 +86,20 @@ export const searchSchema = z.object({
 export const searchParamsSchema = z.object({
   q: z
     .string()
-    .min(2, "Suchbegriff muss mindestens 2 Zeichen lang sein")
-    .max(100, "Suchbegriff darf maximal 100 Zeichen lang sein")
-    .trim(),
+    .trim()
+    .optional()
+    .refine((val) => {
+      // Wenn leer oder undefined, ist es OK
+      if (!val || val.length === 0) return true;
+      // Wenn gesetzt, muss es mindestens 2 Zeichen haben
+      return val.length >= 2;
+    }, "Suchbegriff muss mindestens 2 Zeichen lang sein")
+    .refine((val) => {
+      // Wenn leer oder undefined, ist es OK
+      if (!val || val.length === 0) return true;
+      // Wenn gesetzt, darf es maximal 100 Zeichen haben
+      return val.length <= 100;
+    }, "Suchbegriff darf maximal 100 Zeichen lang sein"),
   type: z.enum(["threads", "posts", "users", "all"]).default("all"),
   page: z.coerce.number().int().min(1).default(1),
   pageSize: z.coerce
@@ -102,7 +113,8 @@ export const searchParamsSchema = z.object({
   // Erweiterte Filter
   dateRange: z.enum(["week", "month", "year", "all"]).optional(),
   categories: z.string().optional(), // Komma-getrennte Kategorie-IDs
-  authorId: z.string().cuid().optional(),
+  author: z.string().min(1).max(20).optional(), // Username (primär)
+  authorId: z.string().cuid().optional(), // ID (Fallback für Robustheit)
 });
 
 // ===== TYPE EXPORTS =====
@@ -116,3 +128,57 @@ export type UpdatePostInput = z.infer<typeof updatePostSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
 export type SearchInput = z.infer<typeof searchSchema>;
 export type SearchParamsInput = z.infer<typeof searchParamsSchema>;
+
+// ===== PROFILE SCHEMAS =====
+
+export const updateProfileSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Benutzername muss mindestens 3 Zeichen lang sein")
+    .max(20, "Benutzername darf maximal 20 Zeichen lang sein")
+    .regex(
+      /^[a-zA-Z0-9_]+$/,
+      "Benutzername darf nur Buchstaben, Zahlen und Unterstriche enthalten"
+    )
+    .optional(),
+  email: z
+    .string()
+    .email("Bitte gib eine gültige E-Mail-Adresse ein")
+    .optional(),
+  bio: z
+    .string()
+    .max(500, "Profilbeschreibung darf maximal 500 Zeichen lang sein")
+    .optional(),
+  preferences: z.record(z.any()).optional(), // JSON-Objekt
+});
+
+export const avatarSchema = z.object({
+  mimeType: z.enum(["image/jpeg", "image/jpg", "image/png"], {
+    errorMap: () => ({
+      message: "Nur JPEG und PNG Dateien sind erlaubt",
+    }),
+  }),
+  size: z.number().max(2 * 1024 * 1024, "Datei darf maximal 2MB groß sein"), // 2MB
+});
+
+// ===== PASSWORD CHANGE SCHEMA =====
+
+export const changePasswordSchema = z
+  .object({
+    oldPassword: z.string().min(1, "Altes Passwort ist erforderlich"),
+    newPassword: z
+      .string()
+      .min(8, "Neues Passwort muss mindestens 8 Zeichen lang sein")
+      .max(100, "Neues Passwort darf maximal 100 Zeichen lang sein"),
+    confirmPassword: z.string().min(1, "Passwort-Bestätigung ist erforderlich"),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: "Passwörter stimmen nicht überein",
+    path: ["confirmPassword"],
+  });
+
+// ===== TYPE EXPORTS =====
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type AvatarInput = z.infer<typeof avatarSchema>;
+export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;

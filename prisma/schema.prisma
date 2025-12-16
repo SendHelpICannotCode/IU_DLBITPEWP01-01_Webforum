@@ -12,6 +12,10 @@ model User {
   email        String   @unique
   passwordHash String
   role         UserRole @default(USER)
+  avatarUrl    String?
+  bio          String?
+  preferences  Json?
+  lastActiveAt DateTime?
   createdAt    DateTime @default(now())
   posts        Post[]
   threads      Thread[]

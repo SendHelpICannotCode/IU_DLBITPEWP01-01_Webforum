@@ -7,6 +7,7 @@ import {
   searchAll,
 } from "@/actions/search";
 import { searchParamsSchema } from "@/lib/validations";
+import { getUserProfile, getUserProfileByUsername } from "@/actions/profile";
 import { Card, CardContent, PageSizeSelector } from "@/components/ui";
 import {
   SearchResultThread,
@@ -16,7 +17,7 @@ import {
 } from "@/components/search";
 import { SearchPagination } from "@/components/search/SearchPagination";
 import { SearchFilters } from "@/components/search/SearchFilters";
-import { Search } from "lucide-react";
+import { Search, User } from "lucide-react";
 
 interface SearchPageProps {
   searchParams: Promise<{
@@ -26,6 +27,7 @@ interface SearchPageProps {
     pageSize?: string;
     dateRange?: string;
     categories?: string;
+    author?: string;
     authorId?: string;
   }>;
 }
@@ -36,30 +38,51 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   // Validierung der URL-Parameter
   const parsed = searchParamsSchema.safeParse({
-    q: params.q || "",
+    q: params.q || undefined,
     type: params.type || "all",
     page: params.page,
     pageSize: params.pageSize,
     dateRange: params.dateRange,
     categories: params.categories,
+    author: params.author,
     authorId: params.authorId,
   });
 
-  // Wenn keine gültige Query, zur Startseite
-  if (!parsed.success || !parsed.data.q || parsed.data.q.length < 2) {
+  // Wenn Parsing fehlschlägt, zur Startseite
+  if (!parsed.success) {
+    redirect("/");
+  }
+
+  // Wenn keine gültige Query UND keine Filter, zur Startseite
+  const hasQuery = parsed.data.q && parsed.data.q.trim().length >= 2;
+  const hasFilters =
+    parsed.data.author || parsed.data.authorId || parsed.data.categories;
+
+  if (!hasQuery && !hasFilters) {
     redirect("/");
   }
 
   const {
-    q: query,
+    q: query = "",
     type,
     page,
     pageSize,
     dateRange,
     categories,
+    author,
     authorId,
   } = parsed.data;
   const isAdmin = session.role === "ADMIN";
+
+  // Hole Autor-Informationen, falls gefiltert wird
+  let authorName: string | null = null;
+  if (author) {
+    const authorProfile = await getUserProfileByUsername(author);
+    authorName = authorProfile?.username || null;
+  } else if (authorId) {
+    const authorProfile = await getUserProfile(authorId);
+    authorName = authorProfile?.username || null;
+  }
 
   // Filter vorbereiten
   const categoryIds = categories
@@ -68,6 +91,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const filters = {
     dateRange: dateRange as "week" | "month" | "year" | "all" | undefined,
     categoryIds,
+    author: author || undefined,
     authorId: authorId || undefined,
   };
 
@@ -127,7 +151,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           <Search className="h-8 w-8 text-cyan-500" />
           Suchergebnisse
         </h1>
-        <p className="text-slate-400">Suche nach: &quot;{query}&quot;</p>
+        <div className="text-slate-400">
+          {query && query.trim().length >= 2 ? (
+            <p>Suche nach: &quot;{query}&quot;</p>
+          ) : authorName ? (
+            <p className="flex items-center gap-2">
+              <User className="h-4 w-4" />
+              Threads/Posts von:{" "}
+              <span className="text-cyan-400 font-medium">{authorName}</span>
+            </p>
+          ) : (
+            <p>Suche nach: &quot;{query || ""}&quot;</p>
+          )}
+        </div>
       </div>
 
       {/* Tabs */}

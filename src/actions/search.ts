@@ -72,12 +72,21 @@ export async function searchThreads(
   filters?: {
     dateRange?: "week" | "month" | "year" | "all";
     categoryIds?: string[];
-    authorId?: string;
+    author?: string; // Username (primär)
+    authorId?: string; // ID (Fallback)
   }
 ): Promise<SearchThreadsResult> {
   const dbConnected = await checkDatabaseConnection();
 
-  if (!dbConnected || !query || query.trim().length < 2) {
+  // Wenn keine DB-Verbindung oder weder Query noch Filter vorhanden
+  const hasQuery = query && query.trim().length >= 2;
+  const hasFilters =
+    filters?.author ||
+    filters?.authorId ||
+    (filters?.categoryIds && filters.categoryIds.length > 0) ||
+    filters?.dateRange;
+
+  if (!dbConnected || (!hasQuery && !hasFilters)) {
     return {
       threads: [],
       totalCount: 0,
@@ -88,7 +97,7 @@ export async function searchThreads(
     };
   }
 
-  const searchTerm = query.trim();
+  const searchTerm = hasQuery ? query.trim() : "";
   const validPage = Math.max(1, page);
   const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
   const skip = (validPage - 1) * validPageSize;
@@ -117,17 +126,23 @@ export async function searchThreads(
         }
       : undefined;
 
-  // Autor-Filter
-  const authorFilter = filters?.authorId
+  // Autor-Filter (Username hat Priorität, sonst ID)
+  const authorFilter = filters?.author
     ? {
-        authorId: filters.authorId,
+        author: {
+          username: filters.author,
+        },
       }
-    : undefined;
+    : filters?.authorId
+      ? {
+          authorId: filters.authorId,
+        }
+      : undefined;
 
-  // Kombiniere alle Filter
-  const whereClause = {
-    AND: [
-      {
+  // Query-Filter (nur wenn Query vorhanden)
+  // Sucht in Titel, Inhalt UND Autor-Username
+  const queryFilter = hasQuery
+    ? {
         OR: [
           {
             title: {
@@ -141,8 +156,22 @@ export async function searchThreads(
               mode: "insensitive" as const,
             },
           },
+          {
+            author: {
+              username: {
+                contains: searchTerm,
+                mode: "insensitive" as const,
+              },
+            },
+          },
         ],
-      },
+      }
+    : undefined;
+
+  // Kombiniere alle Filter
+  const whereClause = {
+    AND: [
+      ...(queryFilter ? [queryFilter] : []),
       ...(dateFilter ? [dateFilter] : []),
       ...(categoryFilter ? [categoryFilter] : []),
       ...(authorFilter ? [authorFilter] : []),
@@ -253,12 +282,21 @@ export async function searchPosts(
   filters?: {
     dateRange?: "week" | "month" | "year" | "all";
     categoryIds?: string[];
-    authorId?: string;
+    author?: string; // Username (primär)
+    authorId?: string; // ID (Fallback)
   }
 ): Promise<SearchPostsResult> {
   const dbConnected = await checkDatabaseConnection();
 
-  if (!dbConnected || !query || query.trim().length < 2) {
+  // Wenn keine DB-Verbindung oder weder Query noch Filter vorhanden
+  const hasQuery = query && query.trim().length >= 2;
+  const hasFilters =
+    filters?.author ||
+    filters?.authorId ||
+    (filters?.categoryIds && filters.categoryIds.length > 0) ||
+    filters?.dateRange;
+
+  if (!dbConnected || (!hasQuery && !hasFilters)) {
     return {
       posts: [],
       totalCount: 0,
@@ -269,7 +307,7 @@ export async function searchPosts(
     };
   }
 
-  const searchTerm = query.trim();
+  const searchTerm = hasQuery ? query.trim() : "";
   const validPage = Math.max(1, page);
   const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
   const skip = (validPage - 1) * validPageSize;
@@ -300,22 +338,46 @@ export async function searchPosts(
         }
       : undefined;
 
-  // Autor-Filter
-  const authorFilter = filters?.authorId
+  // Autor-Filter (Username hat Priorität, sonst ID)
+  const authorFilter = filters?.author
     ? {
-        authorId: filters.authorId,
+        author: {
+          username: filters.author,
+        },
+      }
+    : filters?.authorId
+      ? {
+          authorId: filters.authorId,
+        }
+      : undefined;
+
+  // Query-Filter (nur wenn Query vorhanden)
+  // Sucht in Inhalt UND Autor-Username
+  const queryFilter = hasQuery
+    ? {
+        OR: [
+          {
+            content: {
+              contains: searchTerm,
+              mode: "insensitive" as const,
+            },
+          },
+          {
+            author: {
+              username: {
+                contains: searchTerm,
+                mode: "insensitive" as const,
+              },
+            },
+          },
+        ],
       }
     : undefined;
 
   // Kombiniere alle Filter
   const whereClause = {
     AND: [
-      {
-        content: {
-          contains: searchTerm,
-          mode: "insensitive" as const,
-        },
-      },
+      ...(queryFilter ? [queryFilter] : []),
       ...(dateFilter ? [dateFilter] : []),
       ...(categoryFilter ? [categoryFilter] : []),
       ...(authorFilter ? [authorFilter] : []),

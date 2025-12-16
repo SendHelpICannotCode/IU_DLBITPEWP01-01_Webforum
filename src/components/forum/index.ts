@@ -15,3 +15,4 @@ export { CategoryTagsInput } from "./CategoryTagsInput";
 export { LockThreadButton } from "./LockThreadButton";
 export { LockedThreadBanner } from "./LockedThreadBanner";
 export { CategoryFilter } from "./CategoryFilter";
+export { SearchBar } from "./SearchBar";

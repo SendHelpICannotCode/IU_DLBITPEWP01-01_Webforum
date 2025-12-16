@@ -32,11 +32,11 @@ export function CategoryForm({
 }: CategoryFormProps) {
   const router = useRouter();
   const isEditMode = !!category;
-  
+
   // Initialisiere State direkt aus category (wenn vorhanden)
   const initialKeywordsString = category?.keywords?.join(", ") || "";
   const initialKeywords = category?.keywords || [];
-  
+
   const [keywordsInput, setKeywordsInput] = useState(initialKeywordsString);
   const [selectedKeywords, setSelectedKeywords] =
     useState<string[]>(initialKeywords);

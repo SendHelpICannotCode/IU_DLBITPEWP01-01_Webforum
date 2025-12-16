@@ -15,6 +15,7 @@ import { useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui";
 import { logout } from "@/actions/auth";
+import { SearchBar } from "@/components/forum/SearchBar";
 
 interface HeaderProps {
   /** Aktueller Benutzer aus Session */
@@ -39,20 +40,21 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-800 bg-slate-900/80 backdrop-blur-md">
-      <div className="container flex h-16 items-center justify-between">
+      <div className="container flex h-16 items-center justify-between gap-4">
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400 cursor-pointer"
+          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400 cursor-pointer flex-shrink-0"
         >
           <MessageSquare className="h-6 w-6 text-cyan-500" />
           <span className="hidden sm:inline">CyberForum</span>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-6"></nav>
+        {/* SearchBar (Desktop) */}
+        <SearchBar />
 
         {/* Auth Buttons (Desktop) */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden md:flex items-center gap-3 flex-shrink-0">
           {user ? (
             <>
               {user.role === "ADMIN" && (

@@ -73,6 +73,38 @@ export const paginationSchema = z.object({
     .default(15),
 });
 
+// ===== SEARCH SCHEMAS =====
+
+export const searchSchema = z.object({
+  query: z
+    .string()
+    .min(2, "Suchbegriff muss mindestens 2 Zeichen lang sein")
+    .max(100, "Suchbegriff darf maximal 100 Zeichen lang sein")
+    .trim(),
+});
+
+export const searchParamsSchema = z.object({
+  q: z
+    .string()
+    .min(2, "Suchbegriff muss mindestens 2 Zeichen lang sein")
+    .max(100, "Suchbegriff darf maximal 100 Zeichen lang sein")
+    .trim(),
+  type: z.enum(["threads", "posts", "users", "all"]).default("all"),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .refine(
+      (val) => [10, 15, 20, 50].includes(val),
+      "Seitengröße muss 10, 15, 20 oder 50 sein"
+    )
+    .default(15),
+  // Erweiterte Filter
+  dateRange: z.enum(["week", "month", "year", "all"]).optional(),
+  categories: z.string().optional(), // Komma-getrennte Kategorie-IDs
+  authorId: z.string().cuid().optional(),
+});
+
 // ===== TYPE EXPORTS =====
 
 export type RegisterInput = z.infer<typeof registerSchema>;
@@ -82,3 +114,5 @@ export type UpdateThreadInput = z.infer<typeof updateThreadSchema>;
 export type CreatePostInput = z.infer<typeof createPostSchema>;
 export type UpdatePostInput = z.infer<typeof updatePostSchema>;
 export type PaginationInput = z.infer<typeof paginationSchema>;
+export type SearchInput = z.infer<typeof searchSchema>;
+export type SearchParamsInput = z.infer<typeof searchParamsSchema>;

@@ -11,6 +11,7 @@ import {
   FileText,
   MessageSquare,
   Ban,
+  UserX,
 } from "lucide-react";
 import { Button } from "@/components/ui";
 import { Card } from "@/components/ui";
@@ -22,7 +23,6 @@ import {
   deleteUser,
 } from "@/actions/admin/users";
 import { UserRole } from "@prisma/client";
-import { UserDetailModal } from "./UserDetailModal";
 import { ConfirmModal } from "@/components/ui/Modal";
 import Link from "next/link";
 
@@ -30,11 +30,15 @@ interface User {
   id: string;
   username: string;
   email: string;
+  emailPublic: boolean;
   role: UserRole;
   isBanned: boolean;
   bannedUntil: Date | null;
   banReason: string | null;
   bannedBy: string | null;
+  isDeleted: boolean;
+  deletedAt: Date | null;
+  deletedBy: string | null;
   createdAt: Date;
   lastActiveAt: Date | null;
   _count: {
@@ -45,15 +49,15 @@ interface User {
 
 interface UserTableProps {
   users: User[];
+  currentUserId?: string;
 }
 
 /**
  * UserTable - Tabelle für Benutzerverwaltung im Admin-Panel
  */
-export function UserTable({ users }: UserTableProps) {
+export function UserTable({ users, currentUserId }: UserTableProps) {
   const router = useRouter();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
   const [isUnbanModalOpen, setIsUnbanModalOpen] = useState(false);
@@ -61,10 +65,13 @@ export function UserTable({ users }: UserTableProps) {
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
 
-  function handleViewDetails(userId: string) {
-    setSelectedUserId(userId);
-    setIsDetailModalOpen(true);
-  }
+  // Prüfe, ob der aktuelle User der letzte Admin ist
+  const adminCount = users.filter(
+    (u) => u.role === "ADMIN" && !u.isDeleted
+  ).length;
+  const currentUser = users.find((u) => u.id === currentUserId);
+  const isLastAdmin =
+    currentUser?.role === "ADMIN" && adminCount === 1 && !currentUser.isDeleted;
 
   function handleRoleChange(userId: string, newRole: UserRole) {
     startTransition(async () => {
@@ -139,8 +146,6 @@ export function UserTable({ users }: UserTableProps) {
     });
   }
 
-  const selectedUser = users.find((u) => u.id === selectedUserId);
-
   return (
     <>
       {/* Fehler-Anzeige */}
@@ -198,8 +203,20 @@ export function UserTable({ users }: UserTableProps) {
                         {user.username.charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <div className="font-medium text-white">
-                          {user.username}
+                        <div className="flex items-center gap-2">
+                          <span className="font-medium text-white">
+                            {user.username}
+                          </span>
+                          {user.role === "ADMIN" && (
+                            <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[10px] text-cyan-300">
+                              ADMIN
+                            </span>
+                          )}
+                          {currentUserId === user.id && (
+                            <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
+                              Du
+                            </span>
+                          )}
                         </div>
                         <div className="text-xs text-slate-500">
                           {user.id.slice(0, 8)}...
@@ -213,37 +230,84 @@ export function UserTable({ users }: UserTableProps) {
                     <div className="flex items-center gap-1.5 text-sm text-slate-300">
                       <Mail className="h-3.5 w-3.5" />
                       <span className="truncate max-w-[200px]">
-                        {user.email}
+                        {user.emailPublic ? (
+                          user.email
+                        ) : (
+                          <span className="text-slate-500 italic">
+                            Nicht öffentlich
+                          </span>
+                        )}
                       </span>
                     </div>
                   </td>
 
                   {/* Rolle */}
                   <td className="py-3 px-4">
-                    <select
-                      value={user.role}
-                      onChange={(e) =>
-                        handleRoleChange(user.id, e.target.value as UserRole)
-                      }
-                      disabled={isPending}
-                      className={cn(
-                        "px-2 py-1 rounded text-xs font-medium border transition-colors",
-                        user.role === "ADMIN"
-                          ? "bg-cyan-900/30 border-cyan-800 text-cyan-400"
-                          : "bg-slate-800 border-slate-700 text-slate-300",
-                        "hover:bg-slate-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                      )}
-                    >
-                      <option value="USER">USER</option>
-                      <option value="ADMIN">ADMIN</option>
-                    </select>
+                    {user.isDeleted ? (
+                      <span className="text-xs text-slate-500 italic">
+                        Gelöscht
+                      </span>
+                    ) : (
+                      <select
+                        value={user.role}
+                        onChange={(e) => {
+                          const newRole = e.target.value as UserRole;
+                          // Verhindere, dass der letzte Admin seine Rolle zu USER ändert
+                          if (
+                            isLastAdmin &&
+                            currentUserId === user.id &&
+                            newRole === "USER"
+                          ) {
+                            setActionError(
+                              "Du kannst deine eigene Rolle nicht ändern, da du der letzte Administrator bist"
+                            );
+                            return;
+                          }
+                          handleRoleChange(user.id, newRole);
+                        }}
+                        disabled={
+                          isPending ||
+                          (isLastAdmin && currentUserId === user.id)
+                        }
+                        className={cn(
+                          "px-2 py-1 rounded text-xs font-medium border transition-colors",
+                          user.role === "ADMIN"
+                            ? "bg-cyan-900/30 border-cyan-800 text-cyan-400"
+                            : "bg-slate-800 border-slate-700 text-slate-300",
+                          "hover:bg-slate-700 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+                          isLastAdmin &&
+                            currentUserId === user.id &&
+                            "opacity-50"
+                        )}
+                      >
+                        <option value="USER">USER</option>
+                        <option value="ADMIN">ADMIN</option>
+                      </select>
+                    )}
                   </td>
 
                   {/* Status */}
                   <td className="py-3 px-4">
-                    {user.isBanned ? (
+                    {user.isDeleted ? (
                       <div className="flex flex-col gap-1">
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-red-900/30 border border-red-800 text-red-400">
+                          <UserX className="h-3 w-3" />
+                          Gelöscht
+                        </span>
+                        {user.deletedAt && (
+                          <span className="text-xs text-slate-500">
+                            Am:{" "}
+                            {user.deletedAt.toLocaleDateString("de-DE", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}
+                          </span>
+                        )}
+                      </div>
+                    ) : user.isBanned ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-900/30 border border-amber-800 text-amber-400">
                           <Ban className="h-3 w-3" />
                           Gesperrt
                         </span>
@@ -319,44 +383,102 @@ export function UserTable({ users }: UserTableProps) {
                   {/* Aktionen */}
                   <td className="py-3 px-4">
                     <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewDetails(user.id)}
-                        title="Details anzeigen"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      {user.isBanned ? (
+                      {/* Profil-Link: Bei gelöschten Nutzern nicht anzeigen */}
+                      {!user.isDeleted ? (
+                        <Link
+                          href={`/user/${user.username}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          title={
+                            currentUserId === user.id
+                              ? "Eigenes Profil"
+                              : "Profil in neuem Tab öffnen"
+                          }
+                          className={cn(
+                            "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 hover:bg-slate-800 h-8 px-2",
+                            currentUserId === user.id &&
+                              "opacity-50 cursor-not-allowed pointer-events-none"
+                          )}
+                          onClick={(e) => {
+                            if (currentUserId === user.id) {
+                              e.preventDefault();
+                            }
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      ) : (
+                        <div className="h-8 w-8" /> // Platzhalter für Layout
+                      )}
+                      {/* Ban/Unban: Bei gelöschten Nutzern nicht anzeigen */}
+                      {!user.isDeleted ? (
+                        user.isBanned ? (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleUnban(user.id)}
+                            disabled={isPending || currentUserId === user.id}
+                            title={
+                              currentUserId === user.id
+                                ? "Du kannst dich nicht selbst entsperren"
+                                : "Entsperren"
+                            }
+                            className={
+                              currentUserId === user.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }
+                          >
+                            <UserCheck className="h-4 w-4 text-green-400" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleBan(user.id)}
+                            disabled={isPending || currentUserId === user.id}
+                            title={
+                              currentUserId === user.id
+                                ? "Du kannst dich nicht selbst sperren"
+                                : "Sperren"
+                            }
+                            className={
+                              currentUserId === user.id
+                                ? "opacity-50 cursor-not-allowed"
+                                : ""
+                            }
+                          >
+                            <Ban className="h-4 w-4 text-red-400" />
+                          </Button>
+                        )
+                      ) : (
+                        <div className="h-8 w-8" /> // Platzhalter für Layout
+                      )}
+                      {/* Delete-Button: Immer anzeigen, bei gelöschten Nutzern oder eigenem Profil disabled */}
+                      {!user.isDeleted ? (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleUnban(user.id)}
-                          disabled={isPending}
-                          title="Entsperren"
+                          onClick={() => handleDelete(user.id)}
+                          disabled={isPending || currentUserId === user.id}
+                          title={
+                            currentUserId === user.id
+                              ? "Löschung nur über Profil möglich"
+                              : "Löschen"
+                          }
+                          className={
+                            currentUserId === user.id
+                              ? "opacity-50 cursor-not-allowed"
+                              : ""
+                          }
                         >
-                          <UserCheck className="h-4 w-4 text-green-400" />
+                          <Trash2 className="h-4 w-4 text-red-400" />
                         </Button>
                       ) : (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleBan(user.id)}
-                          disabled={isPending}
-                          title="Sperren"
-                        >
-                          <Ban className="h-4 w-4 text-red-400" />
-                        </Button>
+                        <span className="text-xs text-slate-500 italic">
+                          Keine Aktionen verfügbar
+                        </span>
                       )}
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleDelete(user.id)}
-                        disabled={isPending}
-                        title="Löschen"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-400" />
-                      </Button>
                     </div>
                   </td>
                 </tr>
@@ -365,18 +487,6 @@ export function UserTable({ users }: UserTableProps) {
           </table>
         </div>
       </Card>
-
-      {/* Detail-Modal */}
-      {selectedUser && (
-        <UserDetailModal
-          isOpen={isDetailModalOpen}
-          onClose={() => {
-            setIsDetailModalOpen(false);
-            setSelectedUserId(null);
-          }}
-          userId={selectedUser.id}
-        />
-      )}
 
       {/* Ban-Modal */}
       <ConfirmModal

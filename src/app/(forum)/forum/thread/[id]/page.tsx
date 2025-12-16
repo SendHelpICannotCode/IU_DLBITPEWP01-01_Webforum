@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import {
   AlertTriangle,
@@ -6,6 +7,8 @@ import {
   MessageSquare,
   User,
   Users,
+  Ban,
+  UserX,
 } from "lucide-react";
 import { getSession } from "@/lib/session";
 import { getThread } from "@/actions/threads";
@@ -59,7 +62,7 @@ export default async function ThreadPage({
         <Card className="border-amber-500/50">
           <CardContent className="py-12 text-center">
             <AlertTriangle className="mx-auto h-12 w-12 text-amber-500 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">
+            <h3 className="text-md font-medium text-white mb-2">
               Datenbank nicht erreichbar
             </h3>
             <p className="text-slate-400 mb-4">
@@ -105,27 +108,63 @@ export default async function ThreadPage({
           <div className="flex flex-wrap items-center gap-4 text-sm text-slate-400 mb-4 pb-4 border-b border-slate-800">
             {/* Autor */}
             <div className="flex items-center gap-2">
-              <div
-                className={cn(
-                  "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
-                  isAdmin
-                    ? "bg-cyan-900/50 text-cyan-400"
-                    : "bg-slate-800 text-slate-400"
-                )}
-              >
-                {thread.author.username.charAt(0).toUpperCase()}
-              </div>
+              {thread.author.avatarUrl &&
+              !thread.author.isBanned &&
+              !thread.author.isDeleted ? (
+                <div className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-700">
+                  <Image
+                    src={thread.author.avatarUrl}
+                    alt={`${thread.author.username} Avatar`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : thread.author.isDeleted ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-900/50 text-red-400">
+                  <UserX className="h-4 w-4" />
+                </div>
+              ) : thread.author.isBanned ? (
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-900/50 text-amber-400">
+                  <Ban className="h-4 w-4" />
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                    isAdmin
+                      ? "bg-cyan-900/50 text-cyan-400"
+                      : "bg-slate-800 text-slate-400"
+                  )}
+                >
+                  {thread.author.username.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span
                 className={cn(
-                  "font-medium",
-                  isAdmin ? "text-cyan-400" : "text-white"
+                  "text-base font-medium",
+                  isAdmin && !thread.author.isBanned && !thread.author.isDeleted
+                    ? "text-cyan-400"
+                    : "text-white",
+                  (thread.author.isBanned || thread.author.isDeleted) &&
+                    "text-slate-500 italic"
                 )}
               >
-                {thread.author.username}
+                {thread.author.isDeleted
+                  ? "gelöschter Nutzer"
+                  : thread.author.isBanned
+                    ? "gesperrter Nutzer"
+                    : thread.author.username}
               </span>
-              {isAdmin && (
-                <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[10px] text-cyan-300">
-                  Admin
+              {isAdmin &&
+                !thread.author.isBanned &&
+                !thread.author.isDeleted && (
+                  <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[10px] text-cyan-300">
+                    Admin
+                  </span>
+                )}
+              {isOwnThread && (
+                <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
+                  Du
                 </span>
               )}
             </div>
@@ -221,10 +260,20 @@ export default async function ThreadPage({
       {session.isLoggedIn ? (
         <Card>
           <div className="p-6">
-            <h3 className="text-lg font-semibold text-white mb-4">
+            <h3 className="text-md font-semibold text-white mb-4">
               Schreibe eine Antwort
             </h3>
-            <PostForm threadId={thread.id} />
+            {!isThreadLocked && <PostForm threadId={thread.id} />}
+            {isThreadLocked && (
+              <Card className="border-amber-500/50">
+                <CardContent className="py-6 text-center">
+                  <p className="text-slate-400">
+                    Dieses Thema ist gesperrt. Es können keine weiteren
+                    Antworten hinzugefügt werden.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </Card>
       ) : (

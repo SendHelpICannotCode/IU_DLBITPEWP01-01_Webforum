@@ -18,7 +18,6 @@ export function ProfileTabs() {
     { id: "general", label: "Allgemein" },
     { id: "avatar", label: "Avatar" },
     { id: "password", label: "Passwort" },
-    { id: "preferences", label: "Präferenzen" },
   ];
 
   return (

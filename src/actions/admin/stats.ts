@@ -14,24 +14,45 @@ export async function getAdminStats() {
   if (!session.isLoggedIn || session.role !== "ADMIN") {
     return {
       userCount: 0,
+      threadCount: 0,
+      postCount: 0,
       categoryCount: 0,
       lockedThreadCount: 0,
+      bannedUserCount: 0,
     };
   }
 
   // Parallel alle Counts holen für bessere Performance
-  const [userCount, categoryCount, lockedThreadCount] = await Promise.all([
+  const [
+    userCount,
+    threadCount,
+    postCount,
+    categoryCount,
+    lockedThreadCount,
+    bannedUserCount,
+  ] = await Promise.all([
     prisma.user.count(),
+    prisma.thread.count(),
+    prisma.post.count(),
     prisma.category.count(),
     prisma.thread.count({
       where: { isLocked: true },
+    }),
+    prisma.user.count({
+      where: {
+        isBanned: true,
+        isDeleted: false, // Nur gesperrte, nicht gelöschte Nutzer
+      },
     }),
   ]);
 
   return {
     userCount,
+    threadCount,
+    postCount,
     categoryCount,
     lockedThreadCount,
+    bannedUserCount,
   };
 }
 
@@ -53,6 +74,7 @@ export async function getForumStats() {
     totalPosts,
     totalUsers,
     bannedUsers,
+    lockedThreadCount,
     topUsers,
     recentThreads,
     recentPosts,
@@ -61,7 +83,13 @@ export async function getForumStats() {
     prisma.thread.count(),
     prisma.post.count(),
     prisma.user.count(),
-    prisma.user.count({ where: { isBanned: true } }),
+    prisma.user.count({
+      where: {
+        isBanned: true,
+        isDeleted: false, // Nur gesperrte, nicht gelöschte Nutzer
+      },
+    }),
+    prisma.thread.count({ where: { isLocked: true } }),
     prisma.user.findMany({
       take: 50, // Hole mehr, um dann nach Thread-Count zu sortieren
       select: {
@@ -82,6 +110,7 @@ export async function getForumStats() {
         id: true,
         title: true,
         createdAt: true,
+        isLocked: true,
         author: {
           select: {
             username: true,
@@ -145,6 +174,7 @@ export async function getForumStats() {
     totalPosts,
     totalUsers,
     bannedUsers,
+    lockedThreadCount,
     topUsers: topUsersSorted,
     recentThreads,
     recentPosts,

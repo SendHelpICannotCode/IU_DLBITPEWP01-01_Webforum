@@ -130,7 +130,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       totalPages: result.totalPages,
     };
   } else if (type === "users") {
-    const result = await searchUsers(query, page, pageSize);
+    const result = await searchUsers(query, page, pageSize, {
+      author: filters.author,
+      authorId: filters.authorId,
+    });
     usersResult = {
       users: result.users,
       totalCount: result.totalCount,

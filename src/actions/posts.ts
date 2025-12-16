@@ -53,15 +53,24 @@ export async function createPost(
   const { content, threadId } = parsed.data;
 
   try {
-    // 4. Prüfen ob Thread existiert
+    // 4. Prüfen ob Thread existiert und nicht gesperrt ist
     const thread = await prisma.thread.findUnique({
       where: { id: threadId },
+      select: { id: true, isLocked: true },
     });
 
     if (!thread) {
       return {
         success: false,
         error: "Das Thema existiert nicht mehr",
+      };
+    }
+
+    if (thread.isLocked) {
+      return {
+        success: false,
+        error:
+          "Dieses Thema ist gesperrt. Es können keine weiteren Antworten hinzugefügt werden.",
       };
     }
 

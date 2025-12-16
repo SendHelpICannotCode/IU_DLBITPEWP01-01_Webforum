@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { UserRole } from "@prisma/client";
+import { Ban, UserX } from "lucide-react";
 import { Card } from "@/components/ui";
 import { DeletePostButton } from "@/components/forum/DeletePostButton";
 import { PostCardContent } from "@/components/forum/PostCardContent";
@@ -19,6 +21,9 @@ interface PostCardProps {
       id: string;
       username: string;
       role: UserRole;
+      avatarUrl: string | null;
+      isBanned: boolean;
+      isDeleted: boolean;
     };
   };
   currentUserId?: string;
@@ -46,26 +51,55 @@ export function PostCard({
         {/* Header mit Autor */}
         <div className="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            {/* Avatar Placeholder */}
-            <div
-              className={cn(
-                "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
-                isAdmin
-                  ? "bg-cyan-900/50 text-cyan-400"
-                  : "bg-slate-800 text-slate-400"
-              )}
-            >
-              {post.author.username.charAt(0).toUpperCase()}
-            </div>
+            {/* Avatar */}
+            {post.author.avatarUrl &&
+            !post.author.isBanned &&
+            !post.author.isDeleted ? (
+              <div className="relative h-8 w-8 rounded-full overflow-hidden border border-slate-700">
+                <Image
+                  src={post.author.avatarUrl}
+                  alt={`${post.author.username} Avatar`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+            ) : post.author.isDeleted ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-red-900/50 text-red-400">
+                <UserX className="h-4 w-4" />
+              </div>
+            ) : post.author.isBanned ? (
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-900/50 text-amber-400">
+                <Ban className="h-4 w-4" />
+              </div>
+            ) : (
+              <div
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium",
+                  isAdmin
+                    ? "bg-cyan-900/50 text-cyan-400"
+                    : "bg-slate-800 text-slate-400"
+                )}
+              >
+                {post.author.username.charAt(0).toUpperCase()}
+              </div>
+            )}
 
             {/* Username */}
             <span
               className={cn(
-                "font-medium",
-                isAdmin ? "text-cyan-400" : "text-white"
+                "text-base font-medium",
+                isAdmin && !post.author.isBanned && !post.author.isDeleted
+                  ? "text-cyan-400"
+                  : "text-white",
+                (post.author.isBanned || post.author.isDeleted) &&
+                  "text-slate-500 italic"
               )}
             >
-              {post.author.username}
+              {post.author.isDeleted
+                ? "gelöschter Nutzer"
+                : post.author.isBanned
+                  ? "gesperrter Nutzer"
+                  : post.author.username}
             </span>
 
             {/* Admin Badge */}

@@ -12,6 +12,7 @@ interface Profile {
   email: string;
   bio?: string | null;
   preferences?: Record<string, unknown> | null;
+  emailPublic?: boolean;
 }
 
 interface ProfileEditFormProps {
@@ -103,6 +104,24 @@ export function ProfileEditForm({
           <p className="mt-1 text-xs text-slate-500">Maximal 500 Zeichen</p>
         </div>
 
+        {/* Email-Sichtbarkeit */}
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="emailPublic"
+            name="emailPublic"
+            defaultChecked={profile.emailPublic || false}
+            disabled={isPending}
+            className="h-4 w-4 rounded border-slate-700 bg-slate-800 text-cyan-600 focus:ring-2 focus:ring-cyan-500"
+          />
+          <label
+            htmlFor="emailPublic"
+            className="text-sm text-slate-300 cursor-pointer"
+          >
+            E-Mail-Adresse öffentlich sichtbar machen
+          </label>
+        </div>
+
         {/* Submit-Button */}
         <div className="flex justify-end pt-4 border-t border-slate-800">
           <Button type="submit" disabled={isPending}>
@@ -133,17 +152,7 @@ export function ProfileEditForm({
     return <div>{changePasswordForm}</div>;
   }
 
-  // Präferenzen-Tab
-  if (currentTab === "preferences") {
-    return (
-      <div className="space-y-6">
-        <p className="text-slate-400 text-sm">
-          Präferenzen werden in zukünftigen Versionen verfügbar sein.
-        </p>
-        {/* Hier könnten später Theme-Auswahl, Benachrichtigungen, etc. hinzugefügt werden */}
-      </div>
-    );
-  }
-
+  // Präferenzen-Tab entfernt, da keine Präferenzen implementiert sind
+  // Falls ein ungültiger Tab aufgerufen wird, zurück zu "general"
   return null;
 }

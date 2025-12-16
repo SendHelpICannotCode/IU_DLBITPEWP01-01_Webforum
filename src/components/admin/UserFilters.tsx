@@ -106,18 +106,17 @@ export function UserFilters() {
           <option value="ADMIN">ADMIN</option>
         </select>
 
-        {/* Filter zurücksetzen */}
-        {hasActiveFilters && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={clearFilters}
-            className="flex items-center gap-2"
-          >
-            <X className="h-4 w-4" />
-            Zurücksetzen
-          </Button>
-        )}
+        {/* Filter zurücksetzen - immer sichtbar, disabled wenn keine Filter aktiv */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={clearFilters}
+          disabled={!hasActiveFilters}
+          className="flex items-center gap-2"
+        >
+          <X className="h-4 w-4" />
+          Zurücksetzen
+        </Button>
       </div>
 
       {/* Aktive Filter anzeigen */}

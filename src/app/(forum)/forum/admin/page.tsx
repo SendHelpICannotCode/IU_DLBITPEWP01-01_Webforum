@@ -2,7 +2,15 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAdminStats } from "@/actions/admin/stats";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
-import { Users, Tag, Lock, TrendingUp } from "lucide-react";
+import {
+  Users,
+  Tag,
+  Lock,
+  TrendingUp,
+  FileText,
+  MessageSquare,
+  Ban,
+} from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminPage() {
@@ -14,7 +22,14 @@ export default async function AdminPage() {
   }
 
   // Statistiken laden
-  const { userCount, categoryCount, lockedThreadCount } = await getAdminStats();
+  const {
+    userCount,
+    threadCount,
+    postCount,
+    categoryCount,
+    lockedThreadCount,
+    bannedUserCount,
+  } = await getAdminStats();
 
   return (
     <div className="container">
@@ -23,9 +38,9 @@ export default async function AdminPage() {
         <p className="text-slate-400">Verwaltung und Moderation des Forums</p>
       </div>
 
-      {/* Dashboard-Karten */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <Card>
+      {/* Dashboard-Karten - Statistik-Übersicht (nicht klickbar) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <Card className="border-slate-700/50 bg-slate-900/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -37,7 +52,31 @@ export default async function AdminPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-slate-700/50 bg-slate-900/30">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-400 mb-1">Threads</p>
+                <p className="text-2xl font-bold text-white">{threadCount}</p>
+              </div>
+              <FileText className="h-8 w-8 text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-700/50 bg-slate-900/30">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-400 mb-1">Posts</p>
+                <p className="text-2xl font-bold text-white">{postCount}</p>
+              </div>
+              <MessageSquare className="h-8 w-8 text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-700/50 bg-slate-900/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -49,7 +88,7 @@ export default async function AdminPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-slate-700/50 bg-slate-900/30">
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
@@ -59,6 +98,22 @@ export default async function AdminPage() {
                 </p>
               </div>
               <Lock className="h-8 w-8 text-amber-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="border-slate-700/50 bg-slate-900/30">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-400 mb-1">
+                  Gesperrte Benutzer
+                </p>
+                <p className="text-2xl font-bold text-white">
+                  {bannedUserCount}
+                </p>
+              </div>
+              <Ban className="h-8 w-8 text-red-500" />
             </div>
           </CardContent>
         </Card>

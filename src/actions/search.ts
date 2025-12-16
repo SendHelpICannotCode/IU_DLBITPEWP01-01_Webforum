@@ -472,16 +472,24 @@ export type SearchUsersResult = {
 };
 
 /**
- * Sucht Benutzer nach Username
+ * Sucht Benutzer nach Username (mit optionalen Filtern)
  */
 export async function searchUsers(
   query: string,
   page: number = 1,
-  pageSize: number = 15
+  pageSize: number = 15,
+  filters?: {
+    author?: string; // Username (primär)
+    authorId?: string; // ID (Fallback)
+  }
 ): Promise<SearchUsersResult> {
   const dbConnected = await checkDatabaseConnection();
 
-  if (!dbConnected || !query || query.trim().length < 2) {
+  // Prüfe ob Query vorhanden ODER author-Filter vorhanden
+  const hasQuery = query && query.trim().length >= 2;
+  const hasAuthorFilter = filters?.author || filters?.authorId;
+
+  if (!dbConnected || (!hasQuery && !hasAuthorFilter)) {
     return {
       users: [],
       totalCount: 0,
@@ -492,17 +500,27 @@ export async function searchUsers(
     };
   }
 
-  const searchTerm = query.trim();
+  const searchTerm = hasQuery ? query.trim() : "";
   const validPage = Math.max(1, page);
   const validPageSize = [10, 15, 20, 50].includes(pageSize) ? pageSize : 15;
   const skip = (validPage - 1) * validPageSize;
 
-  const whereClause = {
-    username: {
-      contains: searchTerm,
-      mode: "insensitive" as const,
-    },
-  };
+  // Wenn author-Filter vorhanden, suche nach exaktem Username oder ID
+  // Sonst suche nach Query im Username
+  const whereClause = hasAuthorFilter
+    ? filters?.author
+      ? {
+          username: filters.author,
+        }
+      : {
+          id: filters?.authorId,
+        }
+    : {
+        username: {
+          contains: searchTerm,
+          mode: "insensitive" as const,
+        },
+      };
 
   const [users, totalCount] = await Promise.all([
     prisma.user.findMany({
@@ -593,12 +611,21 @@ export async function searchAll(
   filters?: {
     dateRange?: "week" | "month" | "year" | "all";
     categoryIds?: string[];
-    authorId?: string;
+    author?: string; // Username (primär)
+    authorId?: string; // ID (Fallback)
   }
 ): Promise<SearchAllResult> {
   const dbConnected = await checkDatabaseConnection();
 
-  if (!dbConnected || !query || query.trim().length < 2) {
+  // Prüfe ob Query vorhanden ODER Filter vorhanden
+  const hasQuery = query && query.trim().length >= 2;
+  const hasFilters =
+    filters?.author ||
+    filters?.authorId ||
+    (filters?.categoryIds && filters.categoryIds.length > 0) ||
+    filters?.dateRange;
+
+  if (!dbConnected || (!hasQuery && !hasFilters)) {
     return {
       threads: [],
       posts: [],
@@ -615,10 +642,12 @@ export async function searchAll(
   }
 
   // Parallel alle Suchen ausführen (mit Filtern)
+  // Wenn kein Query vorhanden, aber author-Filter, dann leeren Query verwenden
+  const searchQuery = hasQuery ? query : "";
   const [threadsResult, postsResult, usersResult] = await Promise.all([
-    searchThreads(query, page, pageSize, filters),
-    searchPosts(query, page, pageSize, filters),
-    searchUsers(query, page, pageSize), // Users haben keine Filter
+    searchThreads(searchQuery, page, pageSize, filters),
+    searchPosts(searchQuery, page, pageSize, filters),
+    searchUsers(searchQuery, page, pageSize, filters), // Users bekommen jetzt auch Filter
   ]);
 
   const totalCount =

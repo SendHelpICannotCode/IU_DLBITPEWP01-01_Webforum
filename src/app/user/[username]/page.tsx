@@ -94,10 +94,12 @@ export default async function UserProfilePage({
               </div>
 
               <div className="space-y-2 text-sm text-slate-400">
-                <div className="flex items-center gap-2 justify-center md:justify-start">
-                  <Mail className="h-4 w-4" />
-                  <span>{profile.email}</span>
-                </div>
+                {(isOwnProfile || profile.emailPublic) && (
+                  <div className="flex items-center gap-2 justify-center md:justify-start">
+                    <Mail className="h-4 w-4" />
+                    <span>{profile.email}</span>
+                  </div>
+                )}
                 <div className="flex items-center gap-2 justify-center md:justify-start">
                   <Calendar className="h-4 w-4" />
                   <span>

@@ -39,6 +39,7 @@ export async function getUserProfile(userId: string) {
       lastActiveAt: true,
       createdAt: true,
       role: true,
+      emailPublic: true,
       _count: {
         select: {
           threads: true,
@@ -73,6 +74,7 @@ export async function getUserProfileByUsername(username: string) {
       lastActiveAt: true,
       createdAt: true,
       role: true,
+      emailPublic: true,
       _count: {
         select: {
           threads: true,
@@ -108,6 +110,7 @@ export async function updateProfile(
     email: formData.get("email"),
     bio: formData.get("bio"),
     preferences: formData.get("preferences"),
+    emailPublic: formData.get("emailPublic"),
   };
 
   // Validierung
@@ -118,6 +121,7 @@ export async function updateProfile(
     preferences: rawData.preferences
       ? JSON.parse(rawData.preferences as string)
       : undefined,
+    emailPublic: rawData.emailPublic === "on" || rawData.emailPublic === "true",
   });
 
   if (!parsed.success) {
@@ -130,7 +134,7 @@ export async function updateProfile(
     };
   }
 
-  const { username, email, bio, preferences } = parsed.data;
+  const { username, email, bio, preferences, emailPublic } = parsed.data;
 
   try {
     // Prüfe Eindeutigkeit von Username und E-Mail (falls geändert)
@@ -179,6 +183,7 @@ export async function updateProfile(
         ...(email && { email }),
         ...(bio !== undefined && { bio }),
         ...(preferences && { preferences }),
+        ...(emailPublic !== undefined && { emailPublic }),
       },
       select: { username: true },
     });

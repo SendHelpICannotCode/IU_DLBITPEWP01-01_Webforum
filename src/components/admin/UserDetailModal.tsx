@@ -27,6 +27,7 @@ interface UserData {
   id: string;
   username: string;
   email: string;
+  emailPublic: boolean;
   role: string;
   avatarUrl: string | null;
   bio: string | null;
@@ -177,7 +178,15 @@ export function UserDetailModal({
                   <div className="space-y-1 text-sm text-slate-400">
                     <div className="flex items-center gap-2">
                       <Mail className="h-4 w-4" />
-                      <span>{user.email}</span>
+                      <span>
+                        {user.emailPublic ? (
+                          user.email
+                        ) : (
+                          <span className="text-slate-500 italic">
+                            Nicht öffentlich
+                          </span>
+                        )}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
@@ -238,6 +247,8 @@ export function UserDetailModal({
                 {user._count.threads > 0 && (
                   <Link
                     href={`/forum/search?q=&type=threads&author=${encodeURIComponent(user.username)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="mt-2 inline-block text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
                     Threads anzeigen →
@@ -260,6 +271,8 @@ export function UserDetailModal({
                 {user._count.posts > 0 && (
                   <Link
                     href={`/forum/search?q=&type=posts&author=${encodeURIComponent(user.username)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="mt-2 inline-block text-xs text-cyan-400 hover:text-cyan-300 transition-colors"
                   >
                     Posts anzeigen →
@@ -287,6 +300,8 @@ export function UserDetailModal({
                         <div className="flex-1 min-w-0">
                           <Link
                             href={`/forum/thread/${thread.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-sm font-medium text-white hover:text-cyan-400 transition-colors line-clamp-1"
                           >
                             {thread.title}
@@ -310,6 +325,8 @@ export function UserDetailModal({
                         <div className="flex-1 min-w-0">
                           <Link
                             href={`/forum/thread/${post.thread.id}#post-${post.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="text-sm font-medium text-white hover:text-cyan-400 transition-colors line-clamp-1"
                           >
                             {post.thread.title}

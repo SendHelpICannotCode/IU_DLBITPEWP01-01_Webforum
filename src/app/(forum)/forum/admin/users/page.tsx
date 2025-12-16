@@ -97,7 +97,7 @@ export default async function AdminUsersPage({
             <PageSizeSelector currentPageSize={pageSize} paramPrefix="" />
           </div>
 
-          <UserTable users={result.users} />
+          <UserTable users={result.users} currentUserId={session.userId} />
 
           {result.totalPages > 1 && (
             <div className="mt-6">

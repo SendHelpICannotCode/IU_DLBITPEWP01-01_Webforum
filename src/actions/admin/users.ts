@@ -76,6 +76,7 @@ export async function getAllUsers(
       email?: { contains: string; mode: "insensitive" };
     }>;
     isBanned?: boolean;
+    isDeleted?: boolean;
     role?: UserRole;
   } = {};
 
@@ -101,8 +102,10 @@ export async function getAllUsers(
   // Status-Filter
   if (filters?.status === "banned") {
     whereClause.isBanned = true;
+    whereClause.isDeleted = false; // Nur gesperrte, nicht gelöschte
   } else if (filters?.status === "active") {
     whereClause.isBanned = false;
+    whereClause.isDeleted = false; // Nur aktive, nicht gelöschte
   }
 
   // Rolle-Filter
@@ -120,11 +123,15 @@ export async function getAllUsers(
         id: true,
         username: true,
         email: true,
+        emailPublic: true,
         role: true,
         isBanned: true,
         bannedUntil: true,
         banReason: true,
         bannedBy: true,
+        isDeleted: true,
+        deletedAt: true,
+        deletedBy: true,
         createdAt: true,
         lastActiveAt: true,
         _count: {
@@ -171,6 +178,7 @@ export async function getUser(userId: string) {
       id: true,
       username: true,
       email: true,
+      emailPublic: true,
       role: true,
       avatarUrl: true,
       bio: true,
@@ -265,17 +273,38 @@ export async function updateUserRole(
     };
   }
 
+  const session = await getSession();
+
+  // Prüfe ob User gelöscht ist - gelöschte Nutzer können keine Rollenänderung erhalten
+  const targetUser = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true, isDeleted: true },
+  });
+
+  if (targetUser?.isDeleted) {
+    return {
+      success: false,
+      error: "Gelöschte Nutzer können keine Rollenänderung erhalten",
+    };
+  }
+
   // Verhindere, dass der letzte Admin seine Rolle ändert
   if (role === "USER") {
     const adminCount = await prisma.user.count({
-      where: { role: "ADMIN" },
-    });
-    const targetUser = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { role: true },
+      where: { role: "ADMIN", isDeleted: false },
     });
 
+    // Prüfe ob der aktuelle User versucht, seine eigene Rolle zu ändern
+    const isSelfChange = session.userId === userId;
+
     if (adminCount === 1 && targetUser?.role === "ADMIN") {
+      if (isSelfChange) {
+        return {
+          success: false,
+          error:
+            "Du kannst deine eigene Rolle nicht ändern, da du der letzte Administrator bist",
+        };
+      }
       return {
         success: false,
         error:
@@ -365,6 +394,29 @@ export async function unbanUser(userId: string): Promise<ActionResult> {
     };
   }
 
+  const session = await getSession();
+
+  // Verhindere, dass Admins sich selbst entsperren
+  if (session.userId === userId) {
+    return {
+      success: false,
+      error: "Du kannst dich nicht selbst entsperren",
+    };
+  }
+
+  // Prüfe ob User gelöscht ist - gelöschte Nutzer können nicht entsperrt werden
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isDeleted: true },
+  });
+
+  if (user?.isDeleted) {
+    return {
+      success: false,
+      error: "Gelöschte Nutzer können nicht entsperrt werden",
+    };
+  }
+
   try {
     await prisma.user.update({
       where: { id: userId },
@@ -413,12 +465,19 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
 
   // Verhindere, dass der letzte Admin gelöscht wird
   const adminCount = await prisma.user.count({
-    where: { role: "ADMIN" },
+    where: { role: "ADMIN", isDeleted: false },
   });
   const targetUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, isDeleted: true },
   });
+
+  if (targetUser?.isDeleted) {
+    return {
+      success: false,
+      error: "Dieser Nutzer wurde bereits gelöscht",
+    };
+  }
 
   if (adminCount === 1 && targetUser?.role === "ADMIN") {
     return {
@@ -428,11 +487,11 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
   }
 
   try {
-    // Cascade-Löschung: Threads und Posts werden automatisch gelöscht
+    // Anonymisierung statt Löschung: Threads und Posts bleiben erhalten
     // Avatar-Datei löschen (falls vorhanden)
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { avatarUrl: true },
+      select: { avatarUrl: true, username: true, email: true },
     });
 
     if (user?.avatarUrl) {
@@ -449,8 +508,23 @@ export async function deleteUser(userId: string): Promise<ActionResult> {
       }
     }
 
-    await prisma.user.delete({
+    // User anonymisieren statt löschen
+    // Generiere eindeutigen anonymen Username und E-Mail
+    const deletedUsername = `gelöschter_nutzer_${userId.slice(0, 8)}`;
+    const deletedEmail = `deleted_${userId.slice(0, 8)}@deleted.local`;
+
+    await prisma.user.update({
       where: { id: userId },
+      data: {
+        username: deletedUsername,
+        email: deletedEmail,
+        passwordHash: "", // Passwort entfernen
+        avatarUrl: null,
+        bio: null,
+        isDeleted: true, // Als gelöscht markieren (separat von isBanned)
+        deletedAt: new Date(),
+        deletedBy: session.userId || null,
+      },
     });
 
     revalidatePath("/forum/admin/users");

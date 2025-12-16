@@ -150,6 +150,7 @@ export const updateProfileSchema = z.object({
     .max(500, "Profilbeschreibung darf maximal 500 Zeichen lang sein")
     .optional(),
   preferences: z.record(z.any()).optional(), // JSON-Objekt
+  emailPublic: z.boolean().optional(), // Email-Sichtbarkeit
 });
 
 export const avatarSchema = z.object({

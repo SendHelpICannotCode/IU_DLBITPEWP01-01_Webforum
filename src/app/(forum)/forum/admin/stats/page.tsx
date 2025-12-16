@@ -2,7 +2,15 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getForumStats } from "@/actions/admin/stats";
 import { Card, CardContent } from "@/components/ui";
-import { Users, FileText, MessageSquare, TrendingUp, Ban } from "lucide-react";
+import {
+  Users,
+  FileText,
+  MessageSquare,
+  TrendingUp,
+  Ban,
+  Tag,
+  Lock,
+} from "lucide-react";
 import Link from "next/link";
 import { formatRelativeTime } from "@/components/profile/utils";
 
@@ -40,8 +48,22 @@ export default async function AdminStatsPage() {
         </p>
       </div>
 
-      {/* Übersichts-Karten */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Übersichts-Karten - Gleiche Basis-Metriken wie Hauptseite */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-400 mb-1">Benutzer</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.totalUsers}
+                </p>
+              </div>
+              <Users className="h-8 w-8 text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -74,12 +96,26 @@ export default async function AdminStatsPage() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400 mb-1">Benutzer</p>
+                <p className="text-sm text-slate-400 mb-1">Kategorien</p>
                 <p className="text-2xl font-bold text-white">
-                  {stats.totalUsers}
+                  {stats.categoryDistribution.length}
                 </p>
               </div>
-              <Users className="h-8 w-8 text-cyan-500" />
+              <Tag className="h-8 w-8 text-cyan-500" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-400 mb-1">Gesperrte Threads</p>
+                <p className="text-2xl font-bold text-white">
+                  {stats.lockedThreadCount}
+                </p>
+              </div>
+              <Lock className="h-8 w-8 text-amber-500" />
             </div>
           </CardContent>
         </Card>

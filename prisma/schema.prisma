@@ -21,6 +21,10 @@ model User {
   bannedUntil  DateTime?
   banReason    String?
   bannedBy     String?
+  isDeleted    Boolean  @default(false)
+  deletedAt    DateTime?
+  deletedBy    String?
+  emailPublic  Boolean  @default(false)
   posts        Post[]
   threads      Thread[]
 }

@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
-import { MessageSquare, Clock, User } from "lucide-react";
+import { MessageSquare, Clock, Ban, UserX } from "lucide-react";
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,9 @@ interface ThreadCardProps {
       id: string;
       username: string;
       role: UserRole;
+      avatarUrl: string | null;
+      isBanned: boolean;
+      isDeleted: boolean;
     };
     _count: {
       posts: number;
@@ -29,6 +33,7 @@ interface ThreadCardProps {
       };
     }[];
   };
+  currentUserId?: string;
 }
 
 /**
@@ -93,9 +98,10 @@ function CategoryBadge({
   );
 }
 
-export function ThreadCard({ thread }: ThreadCardProps) {
+export function ThreadCard({ thread, currentUserId }: ThreadCardProps) {
   const router = useRouter();
   const isAdmin = thread.author.role === "ADMIN";
+  const isOwnThread = currentUserId === thread.author.id;
   const postCount = thread._count.posts;
 
   function handleCategoryClick(e: React.MouseEvent, categoryId: string) {
@@ -141,18 +147,69 @@ export function ThreadCard({ thread }: ThreadCardProps) {
           <div className="pt-3 border-t border-slate-800/50 flex flex-wrap items-center gap-4 text-xs text-slate-500">
             {/* Autor */}
             <div className="flex items-center gap-1.5">
-              <User className="h-3.5 w-3.5" />
+              {thread.author.avatarUrl &&
+              !thread.author.isBanned &&
+              !thread.author.isDeleted ? (
+                <div className="relative h-5 w-5 rounded-full overflow-hidden border border-slate-700">
+                  <Image
+                    src={thread.author.avatarUrl}
+                    alt={`${thread.author.username} Avatar`}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+              ) : thread.author.isDeleted ? (
+                <div className="h-5 w-5 rounded-full flex items-center justify-center bg-red-900/50 text-red-400">
+                  <UserX className="h-3 w-3" />
+                </div>
+              ) : thread.author.isBanned ? (
+                <div className="h-5 w-5 rounded-full flex items-center justify-center bg-amber-900/50 text-amber-400">
+                  <Ban className="h-3 w-3" />
+                </div>
+              ) : (
+                <div
+                  className={cn(
+                    "h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-medium",
+                    isAdmin
+                      ? "bg-cyan-900/50 text-cyan-400"
+                      : "bg-slate-800 text-slate-400"
+                  )}
+                >
+                  {thread.author.username.charAt(0).toUpperCase()}
+                </div>
+              )}
               <span
                 className={cn(
-                  isAdmin && "text-cyan-400 font-medium",
+                  "text-sm font-medium",
+                  isAdmin &&
+                    !thread.author.isBanned &&
+                    !thread.author.isDeleted &&
+                    "text-cyan-400",
+                  (thread.author.isBanned || thread.author.isDeleted) &&
+                    "text-slate-500 italic",
+                  !isAdmin &&
+                    !thread.author.isBanned &&
+                    !thread.author.isDeleted &&
+                    "text-white",
                   "truncate max-w-[120px]"
                 )}
               >
-                {thread.author.username}
+                {thread.author.isDeleted
+                  ? "gelöschter Nutzer"
+                  : thread.author.isBanned
+                    ? "gesperrter Nutzer"
+                    : thread.author.username}
               </span>
-              {isAdmin && (
-                <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[10px] text-cyan-300">
-                  Admin
+              {isAdmin &&
+                !thread.author.isBanned &&
+                !thread.author.isDeleted && (
+                  <span className="rounded bg-cyan-900/50 px-1.5 py-0.5 text-[10px] text-cyan-300">
+                    Admin
+                  </span>
+                )}
+              {isOwnThread && (
+                <span className="rounded bg-slate-800 px-1.5 py-0.5 text-[10px] text-slate-400">
+                  Du
                 </span>
               )}
             </div>

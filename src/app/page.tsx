@@ -120,7 +120,11 @@ export default async function HomePage({ searchParams }: HomePageProps) {
         <>
           <div className="space-y-6 mb-8">
             {threads.map((thread) => (
-              <ThreadCard key={thread.id} thread={thread} />
+              <ThreadCard
+                key={thread.id}
+                thread={thread}
+                currentUserId={session.userId}
+              />
             ))}
           </div>
           {/* Pagination */}

@@ -32,8 +32,15 @@ export default async function EditCategoryPage({
     <div className="container">
       <div className="mb-8">
         <Link
-          href="/forum/admin/categories"
+          href="/forum/admin"
           className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zum Admin-Bereich
+        </Link>
+        <Link
+          href="/forum/admin/categories"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4 ml-4"
         >
           <ArrowLeft className="h-4 w-4" />
           Zurück zur Kategorien-Verwaltung

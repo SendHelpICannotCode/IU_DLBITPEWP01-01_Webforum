@@ -8,7 +8,7 @@ import {
   CardContent,
   Button,
 } from "@/components/ui";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminCategoriesPage() {
@@ -23,19 +23,28 @@ export default async function AdminCategoriesPage() {
 
   return (
     <div className="container">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-white mb-2">
-            Kategorien-Verwaltung
-          </h1>
-          <p className="text-slate-400">Verwalte die Kategorien des Forums</p>
-        </div>
-        <Link href="/forum/admin/categories/new">
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Neue Kategorie
-          </Button>
+      <div className="mb-8">
+        <Link
+          href="/forum/admin"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zum Admin-Bereich
         </Link>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-white mb-2">
+              Kategorien-Verwaltung
+            </h1>
+            <p className="text-slate-400">Verwalte die Kategorien des Forums</p>
+          </div>
+          <Link href="/forum/admin/categories/new">
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Neue Kategorie
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Kategorien-Tabelle */}

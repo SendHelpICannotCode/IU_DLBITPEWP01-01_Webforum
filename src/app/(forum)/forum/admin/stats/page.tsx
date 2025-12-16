@@ -10,6 +10,7 @@ import {
   Ban,
   Tag,
   Lock,
+  ArrowLeft,
 } from "lucide-react";
 import Link from "next/link";
 import { formatRelativeTime } from "@/components/profile/utils";
@@ -39,6 +40,13 @@ export default async function AdminStatsPage() {
   return (
     <div className="container">
       <div className="mb-8">
+        <Link
+          href="/forum/admin"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zum Admin-Bereich
+        </Link>
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <TrendingUp className="h-8 w-8 text-cyan-500" />
           Forum-Statistiken
@@ -223,6 +231,8 @@ export default async function AdminStatsPage() {
                 <Link
                   key={thread.id}
                   href={`/forum/thread/${thread.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block p-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                 >
                   <div className="text-sm font-medium text-white line-clamp-1">
@@ -251,6 +261,8 @@ export default async function AdminStatsPage() {
                 <Link
                   key={post.id}
                   href={`/forum/thread/${post.thread.id}#post-${post.id}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="block p-2 rounded bg-slate-800/50 hover:bg-slate-800 transition-colors"
                 >
                   <div className="text-sm font-medium text-white line-clamp-1">

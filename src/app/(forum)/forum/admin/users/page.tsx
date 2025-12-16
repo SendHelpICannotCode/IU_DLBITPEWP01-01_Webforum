@@ -5,8 +5,9 @@ import { Card, CardContent, PageSizeSelector } from "@/components/ui";
 import { UserTable } from "@/components/admin/UserTable";
 import { UserFilters } from "@/components/admin/UserFilters";
 import { paginationSchema } from "@/lib/validations";
-import { Users } from "lucide-react";
+import { Users, ArrowLeft } from "lucide-react";
 import { AdminUsersPagination } from "@/components/admin/AdminUsersPagination";
+import Link from "next/link";
 
 interface AdminUsersPageProps {
   searchParams: Promise<{
@@ -58,6 +59,13 @@ export default async function AdminUsersPage({
   return (
     <div className="container">
       <div className="mb-8">
+        <Link
+          href="/forum/admin"
+          className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition-colors mb-4"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Zurück zum Admin-Bereich
+        </Link>
         <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-3">
           <Users className="h-8 w-8 text-cyan-500" />
           Benutzerverwaltung

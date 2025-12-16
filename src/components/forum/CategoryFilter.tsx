@@ -3,7 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Search, X, Tag, Check } from "lucide-react";
-import { getCategories, searchCategories } from "@/actions/categories";
+import { searchCategories } from "@/actions/categories";
+import { getCategoriesCached } from "@/lib/categoriesClientCache";
 
 interface Category {
   id: string;
@@ -28,7 +29,7 @@ export function CategoryFilter() {
 
   // Lade Kategorien beim Mount
   useEffect(() => {
-    getCategories().then(setCategories).catch(console.error);
+    getCategoriesCached().then(setCategories).catch(console.error);
   }, []);
 
   // Lade ausgewählte Kategorien aus URL

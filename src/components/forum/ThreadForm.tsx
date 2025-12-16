@@ -5,7 +5,7 @@ import { PlusCircle, Loader2 } from "lucide-react";
 import { Button, Input, Textarea } from "@/components/ui";
 import { createThread, type ActionResult } from "@/actions/threads";
 import { CategoryTagsInput } from "./CategoryTagsInput";
-import { getCategories } from "@/actions/categories";
+import { getCategoriesCached } from "@/lib/categoriesClientCache";
 
 export function ThreadForm() {
   const [state, formAction, isPending] = useActionState<
@@ -21,7 +21,7 @@ export function ThreadForm() {
 
   // Lade verfügbare Kategorien
   useEffect(() => {
-    getCategories().then(setAvailableCategories).catch(console.error);
+    getCategoriesCached().then(setAvailableCategories).catch(console.error);
   }, []);
 
   return (

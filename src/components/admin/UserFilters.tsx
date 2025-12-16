@@ -19,16 +19,35 @@ export function UserFilters() {
 
   // Debounced Search
   useEffect(() => {
+    const trimmedSearch = search.trim();
+    const urlSearch = (searchParams.get("search") || "").trim();
+
+    // Wenn der aktuelle Input bereits der URL entspricht, nichts tun.
+    // Wichtig: Verhindert unnötige router.push() bei jeder URL-Änderung (z.B. Pagination).
+    if (trimmedSearch === urlSearch) {
+      return;
+    }
+
+    // Erst ab 2 Zeichen suchen; bei 0 Zeichen darf gesucht/gelöscht werden.
+    if (trimmedSearch.length > 0 && trimmedSearch.length < 2) {
+      return;
+    }
+
     const timeout = setTimeout(() => {
       const params = new URLSearchParams(searchParams.toString());
-      if (search.trim().length >= 2 || search.trim().length === 0) {
-        if (search.trim()) {
-          params.set("search", search.trim());
-        } else {
-          params.delete("search");
-        }
-        params.set("page", "1"); // Reset to page 1
-        router.push(`/forum/admin/users?${params.toString()}`);
+      if (trimmedSearch) {
+        params.set("search", trimmedSearch);
+      } else {
+        params.delete("search");
+      }
+
+      // Nur bei Sucheingabe auf Seite 1 zurücksetzen
+      params.set("page", "1");
+
+      const nextQuery = params.toString();
+      const currentQuery = searchParams.toString();
+      if (nextQuery !== currentQuery) {
+        router.push(`/forum/admin/users?${nextQuery}`);
       }
     }, 300);
 

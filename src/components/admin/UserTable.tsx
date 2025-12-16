@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   UserCheck,
   Trash2,
@@ -57,6 +57,7 @@ interface UserTableProps {
  */
 export function UserTable({ users, currentUserId }: UserTableProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isBanModalOpen, setIsBanModalOpen] = useState(false);
@@ -78,7 +79,8 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
       setActionError(null);
       const result = await updateUserRole(userId, newRole);
       if (result.success) {
-        router.refresh();
+        // Verwende router.push statt router.refresh, um Scroll-Position zu erhalten
+        router.push(`/forum/admin/users?${searchParams.toString()}`);
       } else {
         setActionError(result.error || "Fehler beim Ändern der Rolle");
       }
@@ -109,7 +111,8 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
       if (result.success) {
         setIsBanModalOpen(false);
         setBanReason("");
-        router.refresh();
+        // Verwende router.push statt router.refresh, um Scroll-Position zu erhalten
+        router.push(`/forum/admin/users?${searchParams.toString()}`);
       } else {
         setActionError(result.error || "Fehler beim Sperren");
       }
@@ -124,7 +127,8 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
       const result = await unbanUser(selectedUserId);
       if (result.success) {
         setIsUnbanModalOpen(false);
-        router.refresh();
+        // Verwende router.push statt router.refresh, um Scroll-Position zu erhalten
+        router.push(`/forum/admin/users?${searchParams.toString()}`);
       } else {
         setActionError(result.error || "Fehler beim Entsperren");
       }
@@ -139,7 +143,8 @@ export function UserTable({ users, currentUserId }: UserTableProps) {
       const result = await deleteUser(selectedUserId);
       if (result.success) {
         setIsDeleteModalOpen(false);
-        router.refresh();
+        // Verwende router.push statt router.refresh, um Scroll-Position zu erhalten
+        router.push(`/forum/admin/users?${searchParams.toString()}`);
       } else {
         setActionError(result.error || "Fehler beim Löschen");
       }

@@ -91,6 +91,17 @@ export function SearchBar() {
     }
   }
 
+  function handleShowAllResults() {
+    const trimmedQuery = searchQuery.trim();
+
+    if (trimmedQuery.length >= 2) {
+      setIsDropdownOpen(false);
+      router.push(
+        `/forum/search?q=${encodeURIComponent(trimmedQuery)}&type=all`
+      );
+    }
+  }
+
   function handleClear() {
     setSearchQuery("");
     setSuggestions({ threads: [], posts: [], users: [] });
@@ -167,7 +178,7 @@ export function SearchBar() {
                         className="block px-4 py-2 hover:bg-slate-700 transition-colors cursor-pointer"
                       >
                         <div className="flex items-start gap-2">
-                          <FileText className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                          <FileText className="h-4 w-4 text-cyan-500 mt-0.5 shrink-0" />
                           <span
                             className="text-sm text-slate-200 line-clamp-1"
                             dangerouslySetInnerHTML={{
@@ -194,7 +205,7 @@ export function SearchBar() {
                         className="block px-4 py-2 hover:bg-slate-700 transition-colors cursor-pointer"
                       >
                         <div className="flex items-start gap-2">
-                          <MessageSquare className="h-4 w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
+                          <MessageSquare className="h-4 w-4 text-cyan-500 mt-0.5 shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="text-xs text-slate-400 mb-1 line-clamp-1">
                               {post.thread.title}
@@ -229,7 +240,7 @@ export function SearchBar() {
                         className="block px-4 py-2 hover:bg-slate-700 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
-                          <User className="h-4 w-4 text-cyan-500 flex-shrink-0" />
+                          <User className="h-4 w-4 text-cyan-500 shrink-0" />
                           <span
                             className="text-sm text-slate-200"
                             dangerouslySetInnerHTML={{
@@ -246,7 +257,7 @@ export function SearchBar() {
                 <div className="border-t border-slate-700 mt-2">
                   <button
                     type="button"
-                    onClick={handleSubmit}
+                    onClick={handleShowAllResults}
                     className="w-full px-4 py-2 text-sm text-cyan-400 hover:bg-slate-700 transition-colors cursor-pointer text-left"
                   >
                     Alle Ergebnisse anzeigen →

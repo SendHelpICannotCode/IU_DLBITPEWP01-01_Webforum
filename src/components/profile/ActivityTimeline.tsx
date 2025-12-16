@@ -66,7 +66,7 @@ export function ActivityTimeline({ threads, posts }: ActivityTimelineProps) {
           className="flex items-start gap-3 p-3 rounded-lg bg-slate-800/50 hover:bg-slate-800 transition-colors"
         >
           {/* Icon */}
-          <div className="flex-shrink-0 mt-0.5">
+          <div className="shrink-0 mt-0.5">
             {activity.type === "thread" ? (
               <FileText className="h-5 w-5 text-cyan-500" />
             ) : (
@@ -104,7 +104,7 @@ export function ActivityTimeline({ threads, posts }: ActivityTimelineProps) {
               </div>
 
               {/* Zeit */}
-              <div className="flex items-center gap-1 text-xs text-slate-500 flex-shrink-0">
+              <div className="flex items-center gap-1 text-xs text-slate-500 shrink-0">
                 <Clock className="h-3.5 w-3.5" />
                 <span>{formatRelativeTime(activity.createdAt)}</span>
               </div>

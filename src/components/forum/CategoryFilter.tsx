@@ -216,7 +216,7 @@ export function CategoryFilter() {
                       className="w-full px-3 py-2 text-left text-sm text-slate-300 hover:bg-slate-700 transition-colors flex items-center gap-2 cursor-pointer"
                     >
                       <div
-                        className={`flex-shrink-0 w-4 h-4 rounded border flex items-center justify-center ${
+                        className={`shrink-0 w-4 h-4 rounded border flex items-center justify-center ${
                           isSelected
                             ? "bg-cyan-500 border-cyan-500"
                             : "border-slate-600"
@@ -226,7 +226,7 @@ export function CategoryFilter() {
                       </div>
                       {category.color && (
                         <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          className="w-3 h-3 rounded-full shrink-0"
                           style={{ backgroundColor: category.color }}
                         />
                       )}

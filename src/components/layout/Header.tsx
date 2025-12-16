@@ -44,7 +44,7 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
         {/* Logo */}
         <Link
           href="/"
-          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400 cursor-pointer flex-shrink-0"
+          className="flex items-center gap-2 text-xl font-bold text-white transition-colors hover:text-cyan-400 cursor-pointer shrink-0"
         >
           <MessageSquare className="h-6 w-6 text-cyan-500" />
           <span className="hidden sm:inline">CyberForum</span>
@@ -54,7 +54,7 @@ export function Header({ user, dbConnected = true }: HeaderProps) {
         <SearchBar />
 
         {/* Auth Buttons (Desktop) */}
-        <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-3 shrink-0">
           {user ? (
             <>
               {user.role === "ADMIN" && (

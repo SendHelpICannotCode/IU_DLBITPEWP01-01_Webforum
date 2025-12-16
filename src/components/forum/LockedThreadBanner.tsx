@@ -16,7 +16,7 @@ export function LockedThreadBanner({ className }: LockedThreadBannerProps) {
         className
       )}
     >
-      <Lock className="h-5 w-5 text-amber-400 flex-shrink-0" />
+      <Lock className="h-5 w-5 text-amber-400 shrink-0" />
       <p className="text-sm text-amber-300">
         Dieser Thread ist gesperrt. Nur Administratoren können diesen Thread
         bearbeiten.

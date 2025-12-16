@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { UserRole } from "@prisma/client";
+import type { UserRole } from "@/lib/session";
 import { MessageSquare, Clock, Ban, UserX } from "lucide-react";
 import { Card } from "@/components/ui";
 import { cn } from "@/lib/utils";
@@ -116,7 +116,7 @@ export function ThreadCard({ thread, currentUserId }: ThreadCardProps) {
       <Card className="group transition-all hover:border-cyan-800/50 hover:bg-slate-800/50 mb-4">
         <div className="p-6">
           {/* Titel */}
-          <h3 className="text-xl font-semibold text-white group-hover:text-[var(--accent-hover)] transition-colors line-clamp-1 mb-2">
+          <h3 className="text-xl font-semibold text-white group-hover:text-(--accent-hover) transition-colors line-clamp-1 mb-2">
             {thread.title}
           </h3>
 

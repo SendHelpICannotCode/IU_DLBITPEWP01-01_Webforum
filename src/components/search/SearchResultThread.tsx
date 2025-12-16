@@ -76,7 +76,7 @@ export function SearchResultThread({
         <div className="p-6">
           {/* Titel mit Highlighting */}
           <h3
-            className="text-xl font-semibold text-white group-hover:text-[var(--accent-hover)] transition-colors line-clamp-1 mb-2"
+            className="text-xl font-semibold text-white group-hover:text-(--accent-hover) transition-colors line-clamp-1 mb-2"
             dangerouslySetInnerHTML={{
               __html: highlightText(thread.title, searchQuery),
             }}

@@ -1,7 +1,9 @@
 import { getIronSession, SessionOptions } from "iron-session";
 import { cookies } from "next/headers";
-import { UserRole } from "@prisma/client";
 import { checkDatabaseConnection } from "./db";
+
+// UserRole Type - entspricht dem Prisma Enum (USER | ADMIN)
+export type UserRole = "USER" | "ADMIN";
 
 /**
  * Session-Daten Interface

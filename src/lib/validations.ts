@@ -177,6 +177,34 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   });
 
+// ===== ADMIN SCHEMAS =====
+
+export const updateUserRoleSchema = z.object({
+  userId: z.string().cuid("Ungültige Benutzer-ID"),
+  role: z.enum(["USER", "ADMIN"], {
+    errorMap: () => ({
+      message: "Rolle muss USER oder ADMIN sein",
+    }),
+  }),
+});
+
+export const banUserSchema = z.object({
+  userId: z.string().cuid("Ungültige Benutzer-ID"),
+  reason: z
+    .string()
+    .max(500, "Grund darf maximal 500 Zeichen lang sein")
+    .optional(),
+  until: z.coerce.date().optional(), // Temporäre Sperre
+});
+
+export const unbanUserSchema = z.object({
+  userId: z.string().cuid("Ungültige Benutzer-ID"),
+});
+
+export const deleteUserSchema = z.object({
+  userId: z.string().cuid("Ungültige Benutzer-ID"),
+});
+
 // ===== TYPE EXPORTS =====
 
 export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getAdminStats } from "@/actions/admin/stats";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
-import { Users, Tag, Lock } from "lucide-react";
+import { Users, Tag, Lock, TrendingUp } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminPage() {
@@ -109,6 +109,22 @@ export default async function AdminPage() {
             <CardContent>
               <p className="text-sm text-slate-400">
                 Übersicht aller gesperrten Threads
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/forum/admin/stats">
+          <Card className="hover:border-cyan-800/50 hover:bg-slate-800/50 transition-all cursor-pointer">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <TrendingUp className="h-6 w-6 text-cyan-500" />
+                <CardTitle>Statistiken</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-slate-400">
+                Detaillierte Forum-Statistiken und Aktivitäten
               </p>
             </CardContent>
           </Card>

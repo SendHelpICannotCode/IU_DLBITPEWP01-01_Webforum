@@ -17,6 +17,10 @@ model User {
   preferences  Json?
   lastActiveAt DateTime?
   createdAt    DateTime @default(now())
+  isBanned     Boolean  @default(false)
+  bannedUntil  DateTime?
+  banReason    String?
+  bannedBy     String?
   posts        Post[]
   threads      Thread[]
 }

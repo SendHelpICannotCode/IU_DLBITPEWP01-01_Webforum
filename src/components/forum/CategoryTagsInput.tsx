@@ -85,7 +85,8 @@ export function CategoryTagsInput({
   const dropdownCategories =
     searchQuery.trim().length >= 2
       ? searchResults.filter(
-          (cat) => !selectedCategories.some((selected) => selected.id === cat.id)
+          (cat) =>
+            !selectedCategories.some((selected) => selected.id === cat.id)
         )
       : availableForSelection;
 

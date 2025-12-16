@@ -8,9 +8,7 @@ interface LockedThreadBannerProps {
 /**
  * LockedThreadBanner - Banner für gesperrte Threads
  */
-export function LockedThreadBanner({
-  className,
-}: LockedThreadBannerProps) {
+export function LockedThreadBanner({ className }: LockedThreadBannerProps) {
   return (
     <div
       className={cn(

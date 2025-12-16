@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { UserRole } from "@prisma/client";
 import { MessageSquare, Clock, User } from "lucide-react";
 import { Card } from "@/components/ui";
@@ -62,9 +65,45 @@ function formatRelativeTime(date: Date): string {
   });
 }
 
+function CategoryBadge({
+  category,
+  onClick,
+}: {
+  category: { id: string; name: string; color?: string | null };
+  onClick: (e: React.MouseEvent) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border hover:opacity-80 transition-opacity cursor-pointer"
+      style={{
+        backgroundColor: category.color
+          ? `${category.color}20`
+          : "rgba(51, 65, 85, 0.3)",
+        borderColor: category.color
+          ? `${category.color}40`
+          : "rgba(51, 65, 85, 0.5)",
+        color: category.color || "#cbd5e1",
+      }}
+      aria-label={`Nach ${category.name} filtern`}
+    >
+      {category.name}
+    </button>
+  );
+}
+
 export function ThreadCard({ thread }: ThreadCardProps) {
+  const router = useRouter();
   const isAdmin = thread.author.role === "ADMIN";
   const postCount = thread._count.posts;
+
+  function handleCategoryClick(e: React.MouseEvent, categoryId: string) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Navigiere zur Startseite mit Kategorie-Filter
+    router.push(`/?categories=${categoryId}&page=1`);
+  }
 
   return (
     <Link href={`/forum/thread/${thread.id}`} className="cursor-pointer">
@@ -75,30 +114,15 @@ export function ThreadCard({ thread }: ThreadCardProps) {
             {thread.title}
           </h3>
 
-          {/* Vorschau des Inhalts */}
-          <p className="mb-4 text-sm text-slate-400 line-clamp-2">
-            {thread.content}
-          </p>
-
-          {/* Kategorie-Badges */}
+          {/* Kategorie-Badges - Direkt nach Titel für bessere Sichtbarkeit */}
           {thread.categories && thread.categories.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mb-3">
               {thread.categories.slice(0, 4).map(({ category }) => (
-                <span
+                <CategoryBadge
                   key={category.id}
-                  className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium border"
-                  style={{
-                    backgroundColor: category.color
-                      ? `${category.color}20`
-                      : "rgba(51, 65, 85, 0.3)",
-                    borderColor: category.color
-                      ? `${category.color}40`
-                      : "rgba(51, 65, 85, 0.5)",
-                    color: category.color || "#cbd5e1",
-                  }}
-                >
-                  {category.name}
-                </span>
+                  category={category}
+                  onClick={(e) => handleCategoryClick(e, category.id)}
+                />
               ))}
               {thread.categories.length > 4 && (
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800/50 border border-slate-700 text-slate-400">
@@ -107,6 +131,11 @@ export function ThreadCard({ thread }: ThreadCardProps) {
               )}
             </div>
           )}
+
+          {/* Vorschau des Inhalts */}
+          <p className="mb-4 text-sm text-slate-400 line-clamp-2">
+            {thread.content}
+          </p>
 
           {/* Meta-Informationen */}
           <div className="pt-3 border-t border-slate-800/50 flex flex-wrap items-center gap-4 text-xs text-slate-500">

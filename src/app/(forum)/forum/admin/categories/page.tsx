@@ -1,7 +1,13 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
 import { getCategories } from "@/actions/categories";
-import { Card, CardHeader, CardTitle, CardContent, Button } from "@/components/ui";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  Button,
+} from "@/components/ui";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -22,9 +28,7 @@ export default async function AdminCategoriesPage() {
           <h1 className="text-3xl font-bold text-white mb-2">
             Kategorien-Verwaltung
           </h1>
-          <p className="text-slate-400">
-            Verwalte die Kategorien des Forums
-          </p>
+          <p className="text-slate-400">Verwalte die Kategorien des Forums</p>
         </div>
         <Link href="/forum/admin/categories/new">
           <Button>
@@ -96,14 +100,16 @@ export default async function AdminCategoriesPage() {
                       <td className="py-3 px-4">
                         {category.keywords && category.keywords.length > 0 ? (
                           <div className="flex flex-wrap gap-1">
-                            {category.keywords.slice(0, 3).map((keyword, idx) => (
-                              <span
-                                key={idx}
-                                className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
-                              >
-                                {keyword}
-                              </span>
-                            ))}
+                            {category.keywords
+                              .slice(0, 3)
+                              .map((keyword, idx) => (
+                                <span
+                                  key={idx}
+                                  className="text-xs px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
+                                >
+                                  {keyword}
+                                </span>
+                              ))}
                             {category.keywords.length > 3 && (
                               <span className="text-xs text-slate-500">
                                 +{category.keywords.length - 3}
@@ -116,7 +122,9 @@ export default async function AdminCategoriesPage() {
                       </td>
                       <td className="py-3 px-4 text-right">
                         <div className="flex justify-end gap-2">
-                          <Link href={`/forum/admin/categories/${category.id}/edit`}>
+                          <Link
+                            href={`/forum/admin/categories/${category.id}/edit`}
+                          >
                             <Button variant="outline" size="sm">
                               Bearbeiten
                             </Button>

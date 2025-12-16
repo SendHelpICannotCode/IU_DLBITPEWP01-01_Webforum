@@ -96,9 +96,7 @@ export default async function ThreadPage({
       </Link>
 
       {/* Locked Thread Banner */}
-      {isThreadLocked && (
-        <LockedThreadBanner className="mb-6" />
-      )}
+      {isThreadLocked && <LockedThreadBanner className="mb-6" />}
 
       {/* Thread Header */}
       <Card className="mb-6">

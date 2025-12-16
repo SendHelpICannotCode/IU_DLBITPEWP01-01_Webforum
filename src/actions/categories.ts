@@ -38,6 +38,7 @@ export async function getCategory(id: string) {
 
 /**
  * Durchsucht Kategorien nach Name oder Keywords
+ * Unterstützt auch Teilwort-Suche in Keywords (z.B. "meme" findet "memes")
  */
 export async function searchCategories(query: string) {
   if (!query || query.trim().length < 2) {
@@ -46,23 +47,23 @@ export async function searchCategories(query: string) {
 
   const searchTerm = query.toLowerCase().trim();
 
-  return prisma.category.findMany({
-    where: {
-      OR: [
-        {
-          name: {
-            contains: searchTerm,
-            mode: "insensitive",
-          },
-        },
-        {
-          keywords: {
-            hasSome: [searchTerm],
-          },
-        },
-      ],
-    },
+  // Lade alle Kategorien (für Teilwort-Suche in Keywords)
+  // Bei vielen Kategorien könnte hier eine Raw SQL Query mit array_to_string + ILIKE performanter sein
+  const allCategories = await prisma.category.findMany({
     orderBy: { name: "asc" },
+  });
+
+  // Filtere in JavaScript, um Teilwort-Suche in Keywords zu ermöglichen
+  return allCategories.filter((category) => {
+    // Suche im Namen (case-insensitive, Teilwort)
+    const nameMatch = category.name.toLowerCase().includes(searchTerm);
+
+    // Suche in Keywords (case-insensitive, Teilwort)
+    const keywordMatch = category.keywords.some((keyword) =>
+      keyword.toLowerCase().includes(searchTerm)
+    );
+
+    return nameMatch || keywordMatch;
   });
 }
 

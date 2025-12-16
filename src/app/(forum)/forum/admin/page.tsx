@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/session";
+import { getAdminStats } from "@/actions/admin/stats";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui";
 import { Users, Tag, Lock } from "lucide-react";
 import Link from "next/link";
@@ -12,13 +13,14 @@ export default async function AdminPage() {
     redirect("/");
   }
 
+  // Statistiken laden
+  const { userCount, categoryCount, lockedThreadCount } = await getAdminStats();
+
   return (
     <div className="container">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white mb-2">Admin-Bereich</h1>
-        <p className="text-slate-400">
-          Verwaltung und Moderation des Forums
-        </p>
+        <p className="text-slate-400">Verwaltung und Moderation des Forums</p>
       </div>
 
       {/* Dashboard-Karten */}
@@ -28,7 +30,7 @@ export default async function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400 mb-1">Benutzer</p>
-                <p className="text-2xl font-bold text-white">-</p>
+                <p className="text-2xl font-bold text-white">{userCount}</p>
               </div>
               <Users className="h-8 w-8 text-cyan-500" />
             </div>
@@ -40,7 +42,7 @@ export default async function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400 mb-1">Kategorien</p>
-                <p className="text-2xl font-bold text-white">-</p>
+                <p className="text-2xl font-bold text-white">{categoryCount}</p>
               </div>
               <Tag className="h-8 w-8 text-cyan-500" />
             </div>
@@ -52,7 +54,9 @@ export default async function AdminPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400 mb-1">Gesperrte Threads</p>
-                <p className="text-2xl font-bold text-white">-</p>
+                <p className="text-2xl font-bold text-white">
+                  {lockedThreadCount}
+                </p>
               </div>
               <Lock className="h-8 w-8 text-amber-500" />
             </div>

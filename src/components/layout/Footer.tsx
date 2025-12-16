@@ -76,15 +76,6 @@ export function Footer() {
             >
               <Github className="h-5 w-5" />
             </a>
-            <a
-              href="https://nextjs.org"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-500 hover:text-cyan-400 transition-colors cursor-pointer"
-              aria-label="Next.js Dokumentation"
-            >
-              <ExternalLink className="h-5 w-5" />
-            </a>
           </div>
         </div>
       </div>

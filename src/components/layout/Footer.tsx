@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Github, ExternalLink } from "lucide-react";
+import { MessageSquare, Github } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
